@@ -1,3 +1,8 @@
+
+# personal data, data before publish...
+NoGit/
+
+## Python stuff===============================================================
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

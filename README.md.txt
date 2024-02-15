@@ -1,0 +1,1 @@
+https://spdx.org/licenses/CC-BY-NC-SA-1.0.html
