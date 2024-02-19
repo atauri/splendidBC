@@ -1,0 +1,32 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: splendid beeCounter
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: david
+    family-names: Atauri
+    email: david.atauri@urjc.es
+    affiliation: Universidad Rey Juan Carlos
+    orcid: 'https://orcid.org/0000-0001-8451-5746'
+identifiers:
+  - type: url
+    value: 'https://github.com/atauri/splendidBC'
+    description: Github repo
+repository-code: 'https://github.com/atauri/splendidBC'
+abstract: >-
+  Splendid Bee Counter is an open software a hardware
+  project. My goal is build a monitoring network for
+  environmental srvuillance and beekeeping research 
+keywords:
+  - beekeeping
+  - IOT
+  - honeybee
+license: CC-BY-NC-1.0
+commit: init
+version: '1.0'
+date-released: '2024-02-19'
