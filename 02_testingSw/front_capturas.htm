@@ -179,13 +179,7 @@ small{
                     </span>
                 </div>
                 <br>
-
-                <!-- ENVENTANADO --> 
-                
-                <b>Enventanado:</b>
-                <hr>
-                <input type="tamaño" v-model="base"/>
-                <button @click="getVentanas">Get ventanas</button> 
+                <button @click="enviar">Count bess!</button>
                 
             </div>
 
@@ -197,111 +191,13 @@ small{
                 <source :src="videoPath" type="video/mp4"> Your browser does not support the video tag.
             </video> 
             <highcharts :options="chartOptions" ></highcharts>
+            <button @click="playFragment">Play Zoomed</button><small>{{from}}/{{to}}</small>
           </div>
 
-
-          <!-- ======================================================= -->
-          <div class="col-3" >
-                <div id="patrones" class="dcha ">
-                   
-                    <b>Patrones y modelo</b>
-                    <hr>
-                    <div class="patron" v-for="pat, index in patrones">
-                       
-                      <div v-if="!pat.index">
-                        {{index}}
-                        <span>{{pat.index}}</span>
-                        <div class="tituloPatron" >    
-                            <p><span class="estimadas"
-                                v-if="pat.estimadas">
-                                    {{pat.estimadas.n}}</span> Estimadas,  
-                                (   {{pat.estimadas.probabilidad}}%)</p>
-                            
-                            
-                        </div> 
-                        <highcharts :options="chartPatron(pat.patron)" ></highcharts> 
-                        <br>
-                        <div>
-                            <p  
-                               @dblclick="resetContadas(pat)">
-                                <b> <span class="contadas">
-                                    <span>{{pat.bees}}</span>
-                                    
-                                    </span> Bees seen 
-                                </b> 
-                            </p>
-                            <small>
-                                <span  class="boton" @click="patClick(pat)">  +1  </span>
-                                <span class="boton" @click="enviarPatron(pat, index)">
-                                    Send
-                                </span >
-                               
-                     
-                        </div>
-                       
-                        <small>
-                            <p class="play" 
-                            @click="play(pat.patron.ini, patrones[index+1].patron.ini)"  
-                            @dblclick="play(pat.patron.ini, pat.patron.fin)">
-                                Play: {{pat.patron.ini}}  / {{pat.patron.fin}} </p>
-   
-                        </small>
-                       
-                      </div>
-                       
-                    </div>   
-                       
-                    <!-- <button @click="getPatrones">Get patrones</button> -->
-                    <button @click="enviar">Enviar {{patronesParaEnviar.length}} patrones</button>
-                   <!-- BOTONES
-                
-                    
-                    <button @click="enviar">Enviar {{patronesParaEnviar.length}} patrones</button>
-                    <button @click="entrenarModelo">Entrenar modelo</button>
-                    -->
-                </div>
-            
-                <div >
-                <!--   <p>Total Estimadas: {{totalEstimadas}}</p>
-                    <p>Total Contadas: {{totalContadas}}</p>
-                    <p>Probablidad media: {{probabilidadMedia}}</p>
-                 -->
-                    <div v-if="false" class="patron" v-for="pat, index in patrones">
-                    
-                        <div v-show="pat.fin>primero"> <!-- condicion para que aperzca en el video-->
-                       
-                        <div> 
-                            <highcharts :options="chartPatron(pat.patron)" ></highcharts> 
-                       
-                            <div class="tituloPatron" >    
-                                <p><span class="estimadas">{{pat.estimadas.n}}</span> Estimadas,  
-                                    ({{pat.estimadas.probabilidad}}%)</p>
-                                <p @dblclick="resetContadas(pat)">
-                                     <b> <span class="contadas">{{pat.bees}}</span> Contadas </b> 
-                                    </p>
-                            </div>
-
-                        </div>
-                        <small>
-                            <span  class="boton" @click="patClick(pat)">  +1  </span>
-                            <span class="boton" @click="enviarPatron(pat, index)">
-                                Enviar Patron
-                            </span >
-                           
-                        <hr>
-                        <small>
-                            <p class="play" 
-                            @click="play(pat.pos, patrones[index+1].pos)"  
-                            @dblclick="play(pat.pos, pat.fin)">
-                                Play: {{pat.pos}} ({{x2sec(pat.pos)}}) / {{pat.fin}}  ({{x2sec(pat.fin)}})</p>
-   
-                        </small>
-                       </div> 
-                    </div>
-                </div>
-               
-          </div>
-           --
+          
+          
+          <!-- ==<small><pre>{{log}}</pre></small>===================================================== -->
+        
         </div>
       </div>
 
@@ -313,329 +209,246 @@ small{
         Vue.use(HighchartsVue.default)
         Vue.component('v-select', VueSelect.VueSelect);
 
+        //global vars to be changed on zoom event
+        // video fragment to be played
+        var from = 0
+        var to = 0
 
-var app = new Vue({
-    el: "#app2",
-    mounted: function(){
-        var u = this.setup.apiUrl+"capturas"
-        //alert(u)
-        const vm = this
-        this.getCapturas(u)
-    },
-    data() {
-        return {
-            setup:{
-                "apiUrl": "http://titi.etsii.urjc.es:8008/",
-                //"apiUrl": "http://212.230.117.77:8008/",
-                //"apiUrl":" http://localhost:8008/"
+        var app = new Vue({
+            el: "#app2",
+            mounted: function(){
+                var u = this.setup.apiUrl+"capturas"
+                //alert(u)
+                const vm = this
+                this.getCapturas(u)
             },
-
-            sincro:[],
-            totalEstimadas:0,
-            totalContadas:0,
-            probabilidadMedia:0,
-            pos:0,
-            primero:0,
-            base: 0.2,
-            captura:"",
-            capturas: [],
-            ventanas:[],
-            patrones:[],
-            patronesParaEnviar:[],
-            videoPath: false,
-            videoDuration :0,
-            video: null,
-            chartOptions:{  
-                            chart:{
-                                height: 300,
-                                zoomType:"x",
-                                type: "area",
-                                tooltip: {
-                                    enabled: false
-                                },
-                                 animation: false,
-                            },
-                            title: {
-                                text: 'Capacidad'
-                            },
-                            yAxis: {
-                                max: 1,
-                                plotLines: [{
-                                color: '#550000',
-                                width: 1,
-                                value: .2 // Need to set this probably as a var.
-                            }]
-                            },
-                           
-                            series: [
-                            {
-                                data: [0,1,3,1,0],     
-                                fillColor: "#ff3333", 
-                                lineWidth:1,
-                                opacity: 0.4,
-                                name: 'Capacidad',
-                                    marker: {
-                                        enabled: false
-                                    },
-                                    threshold: null
-                            },
-                            {
-                                fillColor: "#3333ff", 
-                                lineWidth:1,
-                                opacity: 0.4,
-                                data: [0,0,0,1,2,0,0],
-                          
-                            },
-                            {
-                                fillColor: "#333333", 
-                                lineWidth:1,
-                                opacity: 0.2,
-                                data: [0,0,0,1,2,0,0],
-                          
-                            },
-                            ],
-                           
+            data() {
+                return {
+                    setup:{
+                        "apiUrl": "http://titi.etsii.urjc.es:8008/",
+                        "countingUrl": "http://localhost:8008/",
+                        //"apiUrl": "http://212.230.117.77:8008/",
+                        //"apiUrl":" http://localhost:8008/"
                     },
-           
-        }
-    },
-    
-    methods:{
-        moverFicheros(f){
-            var u = "http://puturrudefua.es/splendid/capturas/move.php?f="+f
-            //alert(u)       
-        },
-
-        getCapturas(u){
-            const vm = this
-            axios.get(u)
-                .then(function(lista){
-                    vm.capturas = lista.data
-                })
-        },
-        setUrl(u){
-            this.setup.apiUrl=u;
-            var c = u+"capturas"
-            this.getCapturas(c)
-        },
-        resetContadas(pat){
-             this.totalContadas -= pat.bees
-             pat.bees=0
-        },
-        currpos(){
-            this.pos =this.$refs.video.currentTime 
-        },
-        entrenarModelo(){
-            axios.get(setup.apiUrl+"entrenar")
-        },
-        patClick(pat){
-            pat.bees+=1
-            this.totalContadas +=1
-        },
-        enviarPatron(p, index){
-
-            //meterlo en patronesPara enviar
-            // sacarlos de patrones
-            p.index=this.captura+":"+index
-            this.patronesParaEnviar.push(p)
-            //this.patrones.splice(index,1) //lo saco del array
-        },
-        enviar(){
-
-            // los manda al api
-            const vm = this
-            axios.post(this.setup.apiUrl+'addPats',{
-                video: this.captura,
-                patrones: JSON.stringify(this.patronesParaEnviar)
-            }, {
-                headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                    from:0,
+                    to:0,
+                    sincro:[],
+                    totalEstimadas:0,
+                    totalContadas:0,
+                    probabilidadMedia:0,
+                    pos:0,
+                    primero:0,
+                    base: 0.2,
+                    captura:"",
+                    capturas: [],
+                    ventanas:[],
+                    patrones:[],
+                    patronesParaEnviar:[],
+                    videoPath: false,
+                    videoDuration :0,
+                    video: null,
+                    log: "",
+                    chartOptions:{  
+                                    chart:{
+                                        height: 300,
+                                        zoomType:"x",
+                                        type: "area",
+                                        tooltip: {
+                                            enabled: false
+                                        },
+                                        animation: false,
+                                        
+                                    },
+                                    title: {
+                                        text: 'Capacidad'
+                                    },
+                                    xAxis: {
+            events: {
+                setExtremes(e) {
+                    console.log(e)
+                    from=parseInt(e.min)
+                    to=parseInt(e.max)
+                }}},
+                                    yAxis: {
+                                        max: 1
+                                    },
+                                
+                                    series: [
+                                    {
+                                        data: [0,1,3,1,0],     
+                                        fillColor: "#ff3333", 
+                                        lineWidth:1,
+                                        opacity: 0.4,
+                                        name: 'Capacidad',
+                                            marker: {
+                                                enabled: false
+                                            },
+                                            threshold: null
+                                    },
+                                    {
+                                        fillColor: "#3333ff", 
+                                        lineWidth:1,
+                                        opacity: 0.4,
+                                        data: [0,0,0,1,2,0,0],
+                                
+                                    },
+                                    //detected BEES
+                                    {
+                                        color: "#000000", 
+                                        lineWidth:1,
+                                        opacity: 1,
+                                        data: [0,0,0,1,2,0,0],
+                                    },
+                                    ],
+                            },
+                
                 }
-            }).then(function(){
-                vm.patronesParaEnviar=[]
-                //alert("ok")
-            })
-        },
-        getPatrones(c){
-            const vm = this
-            var url = this.setup.apiUrl+"patrones/"+this.base+"/"+this.captura+".json"
-            alert(url)
-            axios.get(url)
-                .then(function(patrones){
-                    //console.log(patrones.data)
-                    vm.patrones = patrones.data.patrones
-                    vm.totalEstimadas =  patrones.data.totalEstimadas
-                    vm.probabilidadMedia = patrones.data.probabilidadMedia
-                })
-        },
-       
-        getCaptura(c){
-
-            this.videoPath= false // rest del video
-            this.captura = c
-            this.getBuffer(c)
-            this.getSinc(c)
-            this.getVentanas(c)
-
-            const vm = this
-            setTimeout(function(){
-                vm.videoPath = "http://puturrudefua.es/splendid/capturas/"+c+".mp4"
-            },100)
-        },
-        seek(ini){
-            var from=this.x2sec(ini)
-            this.$refs.video.currentTime=from
-            this.currpos()
-        },
-        play(ini, fin){
-    
-            var from=this.x2sec(ini)
-            var to=this.x2sec(fin)
-
-            this.videoDuration=from+"/"+to
-            //alert(to-from)
-            this.$refs.video.currentTime=from
-            this.$refs.video.play()
-            const vm=this
-            var timer = setInterval(
-                function(){
-                    if (vm.$refs.video.currentTime>to){
-                        vm.$refs.video.pause()
-                        clearTimeout(timer);
-                    }
-                       
-                },10
-            )
+            },
             
-        },
-
-        x2sec(x){
-          
-            var dur = this.$refs.video.duration
-
-            // tiene que ir buscando en el array de tiempos porque la sincronizacion del 
-            // no es la correcta. Sincro es el array con las claves de tiempos
-            //iterar hasta un valor mayor
-            var frame = 0
-            var found = false
-            this.sincro.forEach(function(i){
-                console.log(i)
-                frame+=1
-                if (i>x && !found){
-                    found = frame
-                    //alert(found)
-                    }
-            });
-
-            var r= (found/this.sincro.length)*dur
-
-            return( Math.round(r * 10) / 10) 
-        },
-        getVideo(c){
-            var dir ="./capturas/"+c+".mp4"
-            //alert(dir)
-            return(dir)
-        }, 
-        getSinc(c){
-            var url ="http://puturrudefua.es/splendid/capturas/"+c+".t_json"
-            //alert(url)
-            const vm=this
-            axios.get(url)
-                .then(function(serie){
-                    console.log(serie)
-                    vm.sincro=serie.data
-                    // el video empieza tarde respecta al buffer, 
-                    // hay que quitar los primeros valores (hasta el primero de sinc)
-                    vm.primero=vm.sincro[1]
-                    for (let i = 0; i < vm.primero; i++) {
-                        vm.chartOptions.series[0].data[i]=0
-                        } 
-
-                })
-        },
-
-        getBuffer(c){
-            //var url ="http://localhost:8080/buffer/"+c+".json"
-            var url ="http://puturrudefua.es/splendid/capturas/"+c+".json"
-            //alert(url)
-            const vm=this
-            axios.get(url)
-                .then(function(serie){
-                    console.log(serie)
-                    vm.chartOptions.series[0].data = serie.data.interior
-                    vm.chartOptions.series[1].data = serie.data.exterior
-                })
-        },
-        getVentanas(c){
-            const vm=this
-            var u = this.setup.apiUrl+"ventanas/"+this.base+"/"+this.captura+".json"
-            //alert(u)
-            axios.get(u)
-                .then(function(serie){
-                    console.log(serie)
-                    vm.chartOptions.series[2].data = serie.data.serie
-                    vm.patrones = serie.data.patrones
-                })
-        },
-        chartPatron(pat){
-           
-            console.log(pat)
-            var c = {
-                "chart":{
-                    "height": 250,
-                    "type": "area",
-                    "animation": false,
-                    "tooltip": {
-                                "enabled": false
-                            },
-
+            methods:{
+                moverFicheros(f){
+                    var u = "http://puturrudefua.es/splendid/capturas/move.php?f="+f
+                    //alert(u)       
                 },
-                "title": {
-                                "text": ""
-                            },
-                "yAxis": {
-                    "max": 1,
-                    "visible": false,
+                playFragment(){
+                    this.from = from
+                    this.to = to
+                    this.play(from, to)
+                },
+                getCapturas(u){
+                    const vm = this
+                    axios.get(u)
+                        .then(function(lista){
+                            vm.capturas = lista.data
+                        })
+                },
+                setUrl(u){
+                    this.setup.apiUrl=u;
+                    var c = u+"capturas"
+                    this.getCapturas(c)
+                },
+                currpos(){
+                    this.pos =this.$refs.video.currentTime 
+                },
+
+                // ENVIA EL BUFFER PARA PROBAR UN ALGORITMO DE CONTEO =======================
+                enviar(){
+
+                    // los manda al api
+                    var u = (this.setup.countingUrl+'peaks')
+                    var buf ="http://puturrudefua.es/splendid/capturas/"+this.captura+".json"
+        
+                    const vm = this
+                    axios.post(u,{
+                        buffer: buf
+                    },{
+                        headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                        }
+                    }).then(function(r){
+                        //Display bees found by algorithm
+                        console.log(r.data)
+                        vm.log=r.data.bees
+                        vm.chartOptions.series[2].data = r.data.bees
+                    })
+                },
+                getCaptura(c){
+
+                    this.videoPath= false // rest del video
+                    this.captura = c
+                    this.getBuffer(c)
+                    this.getSinc(c)
+                    const vm = this
+                    setTimeout(function(){
+                        vm.videoPath = "http://puturrudefua.es/splendid/capturas/"+c+".mp4"
+                    },100)
+                },
+                seek(ini){
+                    var from=this.x2sec(ini)
+                    this.$refs.video.currentTime=from
+                    this.currpos()
+                },
+                play(ini, fin){
+            
+                    var from=this.x2sec(ini)
+                    var to=this.x2sec(fin)
+
+                    this.videoDuration=from+"/"+to
+                    //alert(to-from)
+                    this.$refs.video.currentTime=from
+                    this.$refs.video.play()
+                    const vm=this
+                    var timer = setInterval(
+                        function(){
+                            if (vm.$refs.video.currentTime>to){
+                                vm.$refs.video.pause()
+                                clearTimeout(timer);
+                            }
+                        },10
+                    )
                     
                 },
-            
-                "legend":{
-                    "enabled": false
-                },
-                "series":[
-                {
-                            data: [],     
-                            fillColor: "#ff3333", 
-                            lineWidth:1,
-                            opacity: 0.4,
-                            
-                        },
-                        {
-                            fillColor: "#3333ff", 
-                            lineWidth:1,
-                            opacity: 0.4,
-                            data: [],
-                        
-                        },
-                        {
-                            type: "line",
-                            data:[0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,]
-                        }
-                ]
-            }
-            //alert( pat.mezcla.length)
-            c.series[0].data = pat.mezcla.slice(0,20)
-            //alert(c.series[0].data.length)
-            c.series[1].data = pat.mezcla.slice(20,40)
-            //alert(c.series[1].data.length)
-           return c
-        }
-    },
-    computed: {
-        
-    }
 
-})
+                x2sec(x){
+                
+                    var dur = this.$refs.video.duration
+
+                    // tiene que ir buscando en el array de tiempos porque la sincronizacion del 
+                    // no es la correcta. Sincro es el array con las claves de tiempos
+                    //iterar hasta un valor mayor
+                    var frame = 0
+                    var found = false
+                    this.sincro.forEach(function(i){
+                        console.log(i)
+                        frame+=1
+                        if (i>x && !found){
+                            found = frame
+                            //alert(found)
+                            }
+                    });
+                    var r= (found/this.sincro.length)*dur
+                    return( Math.round(r * 10) / 10) 
+                },
+                getVideo(c){
+                    var dir ="./capturas/"+c+".mp4"
+                    return(dir)
+                }, 
+                getSinc(c){
+                    var url ="http://puturrudefua.es/splendid/capturas/"+c+".t_json"
+                    //alert(url)
+                    const vm=this
+                    axios.get(url)
+                        .then(function(serie){
+                            console.log(serie)
+                            vm.sincro=serie.data
+                            // el video empieza tarde respecta al buffer, 
+                            // hay que quitar los primeros valores (hasta el primero de sinc)
+                            vm.primero=vm.sincro[1]
+                            for (let i = 0; i < vm.primero; i++) {
+                                vm.chartOptions.series[0].data[i]=0
+                                } 
+
+                        })
+                },
+
+                getBuffer(c){
+                    //var url ="http://localhost:8080/buffer/"+c+".json"
+                    var url ="http://puturrudefua.es/splendid/capturas/"+c+".json"
+                    //alert(url)
+                    const vm=this
+                    axios.get(url)
+                        .then(function(serie){
+                            console.log(serie)
+                            vm.buffer = serie
+                            vm.chartOptions.series[0].data = serie.data.interior
+                            vm.chartOptions.series[1].data = serie.data.exterior
+                        })
+                },
+              
+            }
+            
+
+        })
     </script>
 
 
