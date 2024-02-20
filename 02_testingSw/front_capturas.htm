@@ -1,3 +1,7 @@
+<!-- 
+Copyright 2024 David Atauri
+SPDX-License-Identifier: CC-BY-NC-SA-1
+-->
 <!doctype html>
 <html lang="en">
 
@@ -30,6 +34,7 @@
         padding:5em;   
     }
     video{
+
         margin: 20px;
     }
 
@@ -142,6 +147,9 @@ small{
     text-align: center;
     display: inline-block;
 }
+#licencia{
+    width: 150px;
+}
 </style>
 
 </head>
@@ -180,6 +188,9 @@ small{
                 </div>
                 <br>
                 <button @click="enviar">Count bess!</button>
+
+                <hr>
+                <img id="licencia" src="./add/licencia.png">
                 
             </div>
 
@@ -191,12 +202,17 @@ small{
                 <source :src="videoPath" type="video/mp4"> Your browser does not support the video tag.
             </video> 
             <highcharts :options="chartOptions" ></highcharts>
-            <button @click="playFragment">Play Zoomed</button><small>{{from}}/{{to}}</small>
+
+          
+
+
+            <button @click="playFragment">Play Zoomed</button><small></small>
+           
           </div>
 
           
           
-          <!-- ==<small><pre>{{log}}</pre></small>===================================================== -->
+          <!-- ======================== <small><pre>{{log}}</pre></small>=============================== -->
         
         </div>
       </div>
@@ -247,7 +263,7 @@ small{
                     videoPath: false,
                     videoDuration :0,
                     video: null,
-                    log: "",
+                    log: "log",
                     chartOptions:{  
                                     chart:{
                                         height: 300,
@@ -290,7 +306,6 @@ small{
                                         lineWidth:1,
                                         opacity: 0.4,
                                         data: [0,0,0,1,2,0,0],
-                                
                                     },
                                     //detected BEES
                                     {
@@ -298,7 +313,7 @@ small{
                                         lineWidth:1,
                                         opacity: 1,
                                         data: [0,0,0,1,2,0,0],
-                                    },
+                                    }
                                     ],
                             },
                 
@@ -306,14 +321,12 @@ small{
             },
             
             methods:{
-                moverFicheros(f){
-                    var u = "http://puturrudefua.es/splendid/capturas/move.php?f="+f
-                    //alert(u)       
-                },
+ 
                 playFragment(){
                     this.from = from
                     this.to = to
                     this.play(from, to)
+                    
                 },
                 getCapturas(u){
                     const vm = this
@@ -329,13 +342,15 @@ small{
                 },
                 currpos(){
                     this.pos =this.$refs.video.currentTime 
+                    // convert to xaxis
+                    return this.pos
                 },
 
                 // ENVIA EL BUFFER PARA PROBAR UN ALGORITMO DE CONTEO =======================
                 enviar(){
 
                     // los manda al api
-                    var u = (this.setup.countingUrl+'peaks')
+                    var u = (this.setup.countingUrl+'countBees')
                     var buf ="http://puturrudefua.es/splendid/capturas/"+this.captura+".json"
         
                     const vm = this
@@ -369,33 +384,46 @@ small{
                     this.currpos()
                 },
                 play(ini, fin){
-            
+                    
+                    //this.chartOptions.series[2].data = new Array(this.sincro.slice(-1)).fill(0.5);
+                    
                     var from=this.x2sec(ini)
                     var to=this.x2sec(fin)
 
-                    this.videoDuration=from+"/"+to
+                    //this.videoDuration=from+"/"+to
+                    var dur = this.$refs.video.duration
+
+
                     //alert(to-from)
                     this.$refs.video.currentTime=from
                     this.$refs.video.play()
                     const vm=this
+                    var i =0
                     var timer = setInterval(
                         function(){
+                            i= parseInt((vm.currpos()* vm.sincro.length)/dur)
+                            vm.log = vm.sincro[i]
+                            //vm.chartOptions.series[3].data[vm.sincro[i]] = 1
                             if (vm.$refs.video.currentTime>to){
                                 vm.$refs.video.pause()
                                 clearTimeout(timer);
+
                             }
                         },10
                     )
                     
                 },
 
+                sec2x(s){
+                    //gets video position y seconds and return xAxis chart position
+                },
                 x2sec(x){
-                
                     var dur = this.$refs.video.duration
 
                     // tiene que ir buscando en el array de tiempos porque la sincronizacion del 
                     // no es la correcta. Sincro es el array con las claves de tiempos
-                    //iterar hasta un valor mayor
+                    // iterar hasta un valor mayor
+
                     var frame = 0
                     var found = false
                     this.sincro.forEach(function(i){
@@ -406,7 +434,7 @@ small{
                             //alert(found)
                             }
                     });
-                    var r= (found/this.sincro.length)*dur
+                    var r = (found/this.sincro.length)*dur
                     return( Math.round(r * 10) / 10) 
                 },
                 getVideo(c){
