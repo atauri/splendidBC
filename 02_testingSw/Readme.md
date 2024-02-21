@@ -13,7 +13,7 @@ Each sample consist of:
 
 ![alt text](./images/video.png)
 
-* Array with the **sensor readings** YYYY_MM_DD__hh_mm_ss.json: array with the sensor readings. It is a dicctionario with two arrays ("interior", "exterior") each one is an array of elctrode samples (one each about 4 milliseconds). Old recordings are in the range 0..1, but newer will be in the range 0..127. [json sample](http://puturrudefua.es/splendid/capturas/2023_09_30__09_59_28.json)
+* Array with the **sensor readings** YYYY_MM_DD__hh_mm_ss.json: array with the sensor readings. It is a dicctionary with two arrays ("interior", "exterior") each one is an array of electrode samples (one each 4 milliseconds). Old recordings are in the range 0..1, but newer will be in the range 0..127. [json sample](http://puturrudefua.es/splendid/capturas/2023_09_30__09_59_28.json)
   
 ![alt text](./images/esqema.png)
 
@@ -27,8 +27,10 @@ Each sample consist of:
 ```
 
 *Generated json file*
+
 ![alt text](./images/chart.png)
-  *Chart with generated data in the user inteface. Blue is "interior", red is "exterior"*
+  
+*Chart with generated data in the user inteface. Blue is "interior", red is "exterior"*
 
 
 * YYYY_MM_DD__hh_mm_ss.t_json: array with **synchronisation** information from the video and the electrode readings. Each position in the array relates to a video frame, and its value is the position in the array of samples.If sync[200]=1340 then it means that video frame 200 correspond to samples *interior[1340]* and *exterior[1340]*. 
