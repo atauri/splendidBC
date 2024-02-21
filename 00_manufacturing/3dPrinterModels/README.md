@@ -1,6 +1,5 @@
-# How to build a beeCounter
 
-instrucciones paso a paso
+# How to build a beeCounter
 
 ## Ingredients
 
@@ -18,6 +17,18 @@ instrucciones paso a paso
 
 ## Methods
 
-1 print a escape in a 3d printer
+1 print an *escape* in a 3d printer and sand it.
+
+![](image/README/cono.png)
+
+2 Take a piece of single-wire cable and strip the end by screwing it into a #7 drill bit until it makes 2 full turns. Repeat this operation to obtain two cables. These will be the electrodes
+
+3 Print two caps
+
+4 put the drill in the escape, then one electrode, cover it with one cap and glue them all together
+
+5 repeat the operation with the second electrode
+
+6 repeat everything to get four escapes
 
 ![1708445499719](image/README/1708445499719.png)
