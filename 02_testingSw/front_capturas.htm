@@ -187,7 +187,7 @@ small{
                     </span>
                 </div>
                 <br>
-                <button @click="enviar">Count bess!</button>
+               
 
                 <hr>
                 <img id="licencia" src="./add/licencia.png">
@@ -203,12 +203,12 @@ small{
             </video> 
             <highcharts :options="chartOptions" ></highcharts>
 
+
+            <button @click="enviar">Count bess!</button> 
+            <button @click="playFragment">Play Zoomed</button>
+            <span> {{foundBees}} Found!</span>
           
-
-
-            <button @click="playFragment">Play Zoomed</button><small></small>
-           
-          </div>
+        </div>
 
           
           
@@ -264,6 +264,7 @@ small{
                     videoDuration :0,
                     video: null,
                     log: "log",
+                    foundBees: false,
                     chartOptions:{  
                                     chart:{
                                         height: 300,
@@ -276,7 +277,7 @@ small{
                                         
                                     },
                                     title: {
-                                        text: 'Capacidad'
+                                        text: 'Capacity'
                                     },
                                     xAxis: {
             events: {
@@ -308,10 +309,11 @@ small{
                                         data: [0,0,0,1,2,0,0],
                                     },
                                     //detected BEES
-                                    {
+                                    {   type: 'spline',
                                         color: "#000000", 
                                         lineWidth:1,
-                                        opacity: 1,
+                                        borderColor:"#000000",
+                                        opacity: 0.5,
                                         data: [0,0,0,1,2,0,0],
                                     }
                                     ],
@@ -364,6 +366,7 @@ small{
                         //Display bees found by algorithm
                         console.log(r.data)
                         vm.log=r.data.bees
+                        vm.foundBees=r.data.totalBees
                         vm.chartOptions.series[2].data = r.data.bees
                     })
                 },

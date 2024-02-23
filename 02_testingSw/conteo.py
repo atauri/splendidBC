@@ -51,25 +51,35 @@ def getBufferFromUrlRequest(rq):
 # https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html
 @allow_cors
 def peaks(buffer):
+
     from scipy.signal import find_peaks
     import numpy as np
 
+    def suavizar(serie):
+        from scipy.signal import savgol_filter
+        suave = savgol_filter(serie, window_length=100, polyorder=2) /127
+        return suave
+    
     bees=[0] * len(buffer['interior']) 
     
     # sensor interior
-    '''peaks, _ = find_peaks(buffer['interior'], height=50, distance=100)
+    '''peaks, _ = find_peaks(suave, height=50, distance=100)
     for p in peaks:
-        bees[p] = 0.5
     '''
-    peaks, _ = find_peaks(buffer['exterior'], height=50, distance=100)
+    exterior =  suavizar(buffer['exterior'])
+    peaks, _ = find_peaks(exterior, height=.5, prominence=.2, distance=100)
+    print(peaks)
     for p in peaks:
-        bees[p] = 1
+        exterior[p] = 0
 
     print(len(peaks))
+
     r={
-        "bees": bees
+        "bees": exterior.tolist(),
+        "totalBees": len(peaks)
     }
-    #print(r)
+
+    print(r)
     return json.dumps(r)
 
 @allow_cors
