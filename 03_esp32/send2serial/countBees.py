@@ -12,7 +12,8 @@ rpiPort = "---"
 what = mac # Connectig to who (mac, win or rpi)
 bufferSize = 1000 # Number of samples
 
-escape=1 # which funnel to process...
+# SELECT ESCAPE TO READ FROM [0..3]
+escape=1 
 
 
 def peaks(interior, exterior):
@@ -34,13 +35,10 @@ def peaks(interior, exterior):
 
     combi =  suavizar(combi)
     peaks, _ = find_peaks(combi, height=.25, prominence=.2, distance=100)
-    
     print(peaks)
-    picos = [0]*len(combi)
-    for p in peaks: picos[p]=1
 
     print(len(peaks)) # number of found peaks
-    return(combi, picos)
+    return(combi, peaks)
 
     r={
         "bees": combi.tolist(), # this will be area chart
@@ -82,11 +80,12 @@ def read(pserie):
             if i>= bufferSize:
                 i=0
                 ax.clear()  # erase the chart
-                ax.plot(interior)
-                ax.plot(exterior)
+                ax.set_ylim(0,1)
+                ax.plot(interior, linewidth=.5, color='tab:gray')
+                ax.plot(exterior, linewidth=.5, color='tab:gray')
                 serie, picos = peaks(interior, exterior)
-                ax.plot(serie) 
-                ax.plot(picos, color="r")
+                ax.plot(serie, linewidth=1, color="k") 
+                ax.bar(picos,[1]*len(picos), width=4, color="r")
                 plt.draw()
                 plt.pause(0.05)
         except: pass
@@ -94,6 +93,14 @@ def read(pserie):
 # CREATE A MATPLOT CHART 
 fig = plt.figure()  
 ax = fig.add_subplot()
+
+ax.plot([2,1,3,4,5,4,3], linewidth=.5, color="r") 
+ax.plot([5,6,4,7,8,9,3,4], linewidth=.5, color="b")
+ax.plot([5,6,4,7,8,9,3,4], color="b")
+ax.bar([8],[10], width=0.05, color="k")
+plt.draw()
+plt.pause(0.05)
+time.sleep(3)
 
 pserie=conectar()
 read(pserie)
