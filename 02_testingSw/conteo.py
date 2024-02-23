@@ -65,6 +65,7 @@ def peaks(buffer):
     # sensor interior
     '''peaks, _ = find_peaks(suave, height=50, distance=100)
     for p in peaks:
+        exterior[p] = 0
     '''
     exterior =  suavizar(buffer['exterior'])
     peaks, _ = find_peaks(exterior, height=.5, prominence=.2, distance=100)
