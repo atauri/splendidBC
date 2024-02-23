@@ -2,15 +2,15 @@
 Copyright 2024 David Atauri
 SPDX-License-Identifier: CC-BY-NC-SA-1
 -->
+
 <!doctype html>
 <html lang="en">
 
 <head>
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
-  <!-- Add this to <head> -->
+<!-- libraries: vuejs + bootstrap -->
 
 <!-- Load polyfills to support older browsers -->
 <script src="https://polyfill.io/v3/polyfill.min.js?features=es2015%2CIntersectionObserver" crossorigin="anonymous"></script>
@@ -21,7 +21,6 @@ SPDX-License-Identifier: CC-BY-NC-SA-1
 <script src="https://unpkg.com/vue@2.6.10/dist/vue.js"></script>
 <script src="https://unpkg.com/vue-select@latest"></script>
 
-
 <script src="https://code.highcharts.com/highcharts.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/highcharts-vue@1.3.5/dist/highcharts-vue.min.js"></script>
 
@@ -29,12 +28,12 @@ SPDX-License-Identifier: CC-BY-NC-SA-1
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+
 <style>
     body{
         padding:5em;   
     }
     video{
-
         margin: 20px;
     }
 
@@ -64,40 +63,8 @@ SPDX-License-Identifier: CC-BY-NC-SA-1
     padding: 10px;
 }
 
-.nota{
-    margin: 20px;
-    font-size: 12px;
-    color:#999;
-}
-#patrones{
-    text-align: center;
-    height: 800px;
-    overflow: scroll;
-}
-.patron{
-    display: inline-block;
-    width: 200px;
-    margin: 10px;
-    padding: 25px;
-    border-radius: 5px;
-    /*box-shadow: 5px 5px 10px #ccc;*/
-}
-.tituloPatron{
-    margin-top: 20px;
-    text-align: left;
-}
-.tituloPatron p{
-    margin: 5px;
-    font-size: 12px;
-}
-.zda{
-    text-align: left;
-}
-.dcha{
-    text-align: left;
-    padding-left: 20px;
-    padding-bottom: 20px;
-}
+
+
 input{
     width:170px;
     color: gray;
@@ -117,21 +84,9 @@ small{
     display: inline-block;
     margin-right:3px;
     width: 45%;
-    
+   
 }
-.estimadas, .contadas{
-    padding: 3px 6px 3px 6px;
-    margin: 3px;
-  
-    width:25px;
-    border-radius: 3px;
-    background-color: #999;
-    color: #eee
-}
-.contadas{
-    background-color: #eee;
-    color: #999;
-}
+
 .corta{
     height: 800px;
     overflow: scroll;
@@ -155,32 +110,22 @@ small{
 </head>
 
 <body>
-  <div id="app2" >
-   
+  <div id="app2" >   
     <div class="container ">
         
         <div class="row">
             <h2 id="titulo">Splendid BeeCounter </h2>
-            <small>{{setup.apiUrl}} </small>
-                <p></p>
-               <small>
-                <span @click="setUrl('http://titi.etsii.urjc.es:8008/')"> [ titi _ int ] </span>
-                <span @click="setUrl('http://localhost:8008/')"> [ localhost ] </span>
-                <span @click="setUrl('http://193.147.50.20:8008/')"> [ titi _ remto ] </span>
-               </small>
-               <p></p>
+            <small>Api url in {{setup.apiUrl}} </small> <p></p>
+            
          
-            <div class="col-2 izda ">
+            <div class="col-4 izda ">
                
                 <b>Capturas:</b><br>
                 <small>{{captura}}</small>
                 <hr>
                 <div class="corta">
                     <span v-for="captura, index in capturas">
-                        <span 
-                            @dblclick="moverFicheros(captura)"
-                            @click="getCaptura(captura)" class="index"
-                            >
+                        <span  @click="getCaptura(captura)" class="index">
                            
                             <b>{{index}}</b> 
                         </span>
@@ -249,17 +194,12 @@ small{
                     from:0,
                     to:0,
                     sincro:[],
-                    totalEstimadas:0,
-                    totalContadas:0,
-                    probabilidadMedia:0,
+                    
                     pos:0,
-                    primero:0,
-                    base: 0.2,
+                    
                     captura:"",
                     capturas: [],
-                    ventanas:[],
-                    patrones:[],
-                    patronesParaEnviar:[],
+            
                     videoPath: false,
                     videoDuration :0,
                     video: null,
@@ -280,46 +220,50 @@ small{
                                         text: 'Capacity'
                                     },
                                     xAxis: {
-            events: {
-                setExtremes(e) {
-                    console.log(e)
-                    from=parseInt(e.min)
-                    to=parseInt(e.max)
-                }}},
-                                    yAxis: {
-                                        max: 1
-                                    },
-                                
-                                    series: [
-                                    {
-                                        data: [0,1,3,1,0],     
-                                        fillColor: "#ff3333", 
-                                        lineWidth:1,
-                                        opacity: 0.4,
-                                        name: 'Capacidad',
-                                            marker: {
-                                                enabled: false
+                            events: {
+                                setExtremes(e) {
+                                    console.log(e)
+                                    from=parseInt(e.min)
+                                    to=parseInt(e.max)
+                                }}},
+                                                    yAxis: {
+                                                        max: 1,
+                                                        min:0
+                                                    },
+                                                
+                                                    series: [
+                                                    {
+                                                        data: [0,1,3,1,0],   
+                                                        type: 'spline',  
+                                                        color: "#ff3333", 
+                                                        lineWidth:1,
+                                                        opacity: 1,
+                                                        name: 'Capacidad',
+                                                            marker: {
+                                                                enabled: false
+                                                            },
+                                                            threshold: null
+                                                    },
+                                                    {
+                                                        type: 'spline',
+                                                        color: "#3333ff", 
+                                                        lineWidth:1,
+                                                        opacity: 1,
+                                                        data: [0,0,0,1,2,0,0],
+                                                    },
+                                                    //detected BEES
+                                                    {   
+                                                        fillColor: "#cccccc", 
+                                                        lineWidth:1,
+                                                        opacity: 0.4,
+                                                        color: "#000000", 
+                                                        lineWidth:2,
+                                                        borderColor:"#000000",
+                                                        data: [0,0,0,1,2,0,0],
+                                                    }
+                                                    ],
                                             },
-                                            threshold: null
-                                    },
-                                    {
-                                        fillColor: "#3333ff", 
-                                        lineWidth:1,
-                                        opacity: 0.4,
-                                        data: [0,0,0,1,2,0,0],
-                                    },
-                                    //detected BEES
-                                    {   type: 'spline',
-                                        color: "#000000", 
-                                        lineWidth:1,
-                                        borderColor:"#000000",
-                                        opacity: 0.5,
-                                        data: [0,0,0,1,2,0,0],
-                                    }
-                                    ],
-                            },
-                
-                }
+                                }
             },
             
             methods:{
@@ -348,7 +292,7 @@ small{
                     return this.pos
                 },
 
-                // ENVIA EL BUFFER PARA PROBAR UN ALGORITMO DE CONTEO =======================
+                // Send buffer to LOCAL serever to try a counting method =======================
                 enviar(){
 
                     // los manda al api
@@ -477,8 +421,6 @@ small{
                 },
               
             }
-            
-
         })
     </script>
 

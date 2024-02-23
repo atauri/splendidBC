@@ -37,6 +37,11 @@ Here is How I work:
 
 * If you zoom to a border "play zoomed" won't work
   
-## Then...
+## What's next
 
 Once you happy with your counting function migrate it to your counting microcontrolles (maybe an ESP32 or a piZero, or whatever...)
+
+## To-do list
+
+* Move captures from puturrudefua to splendid server (titi)
+* Store real bee counts on aditional file (something like YYYY_MM_DD__hh__mm__ss.info) and display is int the UI.

@@ -12,14 +12,13 @@ import json
 
 '''for CORS from web requests'''
 def allow_cors(func):
-    """ this is a decorator which enable CORS for specified endpoint """
     def wrapper(*args, **kwargs):
         response.headers['Access-Control-Allow-Origin'] = '*' # * in case you want to be accessed via any website
         return func(*args, **kwargs)
     return wrapper
 
-'''Let buffer between 0..127 if its in range 0..1
-Some old captures are in the range 0..1'''
+'''Set buffer in range 0..127 if its in range 0..1
+captures can be in range 0..1'''
 def desnormalizar(buff):
     if (max(buff['interior'])<=1):
         buff['interior'] = [int(i*127) for i in buff['interior']]
@@ -32,7 +31,8 @@ def getBufferFromUrlRequest(rq):
     try:
         bufferUrl = rq.POST['buffer']
         r = requests.get(bufferUrl)
-        data = desnormalizar(json.loads(r.text))
+        data = json.loads(r.text)
+        #data = desnormalizar(data) # put in range 0..127
     except Exception as e: print(e)
     return data
 
@@ -42,12 +42,13 @@ def getBufferFromUrlRequest(rq):
     'interior':[...],
     'exterior':[...]
 }'''
-#return an array of ints with same langth as buffer with '1' whwere a bee is detected:
+#return an array of same langth as buffer with  mark whwere a bee is detected (ex 1)
+# just to display it in user interface 
 '''{
     'bees':[0,0,0,0,0,1,0,0....]
 }'''
 
-# Search for peaks buffer['exterior'] whit scipy library (Just demo)
+# Search for peaks i buffers whit scipy library
 # https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html
 @allow_cors
 def peaks(buffer):
@@ -55,33 +56,32 @@ def peaks(buffer):
     from scipy.signal import find_peaks
     import numpy as np
 
+    # remove noise applying savgol filter
     def suavizar(serie):
         from scipy.signal import savgol_filter
-        suave = savgol_filter(serie, window_length=100, polyorder=2) /127
+        #suave = savgol_filter(serie, window_length=100, polyorder=2) /127
+        suave = savgol_filter(serie, window_length=50, polyorder=2)
         return suave
     
-    bees=[0] * len(buffer['interior']) 
+    # multiply both electrodes (in rage 0..1)
+    combi=[]
+    for i in range(len(buffer['exterior'])):
+        combi.append(buffer['exterior'][i]*buffer['interior'][i])
+
+    combi =  suavizar(combi)
+    peaks, _ = find_peaks(combi, height=.25, prominence=.2, distance=100)
     
-    # sensor interior
-    '''peaks, _ = find_peaks(suave, height=50, distance=100)
-    for p in peaks:
-        exterior[p] = 0
-    '''
-    exterior =  suavizar(buffer['exterior'])
-    peaks, _ = find_peaks(exterior, height=.5, prominence=.2, distance=100)
     print(peaks)
     for p in peaks:
-        exterior[p] = 0
+        combi[p] = 0 # make a mark for the UI
 
-    print(len(peaks))
+    print(len(peaks)) # number of found peaks
 
     r={
-        "bees": exterior.tolist(),
+        "bees": combi.tolist(), # this will be area chart
         "totalBees": len(peaks)
     }
-
-    print(r)
-    return json.dumps(r)
+    return json.dumps(r) # serialize
 
 @allow_cors
 def myCountingAlgorithm(buffer):
@@ -97,9 +97,10 @@ def myCountingAlgorithm(buffer):
      
     '''
     r={
-        "bees": bees
+        "bees": bees, # a serie
+        "totalBees": 0 # number of found bees
     }
-    return json.dumps(r) # make a string
+    return json.dumps(r) # serialize
 
 '''Called from testingSw/front ---> countBees button'''
 @post('/countBees')
