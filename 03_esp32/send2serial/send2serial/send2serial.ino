@@ -12,12 +12,12 @@
 
 // cap1188 to counter electrodes
 // A
-static byte registrosExt[4]={16,20,18,22};
-static byte registrosInt[4]={17,21,19,23};
+//static byte registrosExt[4]={16,20,18,22};
+//static byte registrosInt[4]={17,21,19,23};
 
 // contador B
-//static byte registrosExt[4]={16,18,20,23};
-//static byte registrosInt[4]={17,19,21,22};
+static byte registrosExt[4]={16,18,20,23};
+static byte registrosInt[4]={17,19,21,22};
 
 // cap1188 sensibility ----------------------
 #define SENS1 0x00 // less
@@ -81,11 +81,20 @@ void loop(){
       if(y<0) y=0;
 
       //send to .py  
-      // Serial.print("     ");
+      
+      // send each elctrode serated
+      /*
       Serial.print(x);
       Serial.print(",");
       Serial.print(y);
       Serial.print(","); 
+      */
+
+      // send two ectrodes multiplied and normalized
+      // good for peak finding
+      Serial.print((x/127.)*(y/127.)); //one escape in one float 0..1
+      Serial.print(",");
+    
     }
     Serial.println("");    
    delay(pausa);
