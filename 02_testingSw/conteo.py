@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: CC-BY-NC-SA-1
 
 '''
-Este contien métodos para probar algoritmos de conteo sobre buffers de muestras recibidos por POST desde el front
+Métodos para probar algoritmos de conteo sobre buffers de muestras recibidos por POST desde el front
 '''
 from bottle import route, run, post, response, request, static_file
 from importlib import reload 
@@ -42,7 +42,7 @@ def getBufferFromUrlRequest(rq):
     'interior':[...],
     'exterior':[...]
 }'''
-#return an array of same langth as buffer with  mark whwere a bee is detected (ex 1)
+#return an array of same length as buffer with  mark whwere a bee is detected (ex 1)
 # just to display it in user interface 
 '''{
     'bees':[0,0,0,0,0,1,0,0....]
