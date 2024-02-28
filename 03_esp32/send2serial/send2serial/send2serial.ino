@@ -12,12 +12,12 @@
 
 // cap1188 to counter electrodes
 // A
-//static byte registrosExt[4]={16,20,18,22};
-//static byte registrosInt[4]={17,21,19,23};
+static byte registrosExt[4]={16,20,18,22};
+static byte registrosInt[4]={17,21,19,23};
 
 // contador B
-static byte registrosExt[4]={16,18,20,23};
-static byte registrosInt[4]={17,19,21,22};
+//static byte registrosExt[4]={16,18,20,23};
+//static byte registrosInt[4]={17,19,21,22};
 
 // cap1188 sensibility ----------------------
 #define SENS1 0x00 // less
