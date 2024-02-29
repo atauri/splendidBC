@@ -1,5 +1,12 @@
+
+![alt text](image.png)
+
 # Splendid BeeCounter
+
+![alt text](image-1.png)
+
 Hi, i am working on publishing this project. Give me a minute...
+
 
 ## Roadmap
 
