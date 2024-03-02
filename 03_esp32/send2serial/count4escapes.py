@@ -32,20 +32,12 @@ broker_address = "titi.etsii.urjc.es"
 topic = "splendid/insert/counter"
 
 def on_connect(client, userdata, flags, rc):
-    print("MQTT ?")
+    print("on_connect")
     if rc==0:
         print("connected OK Returned code=",rc)
     else:
         print("Bad connection Returned code=",rc)
 
-def connect_mqtt():
-   
-    # Set Connecting Client ID
-    client = mqtt_client.Client(client_id)
-    # client.username_pw_set(username, password)
-    client.on_connect = on_connect
-    client.connect(broker, port)
-    return client
 
 # ============================================================
 
