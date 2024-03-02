@@ -1,10 +1,13 @@
-# Software for raspberry pi
+# Software for Raspberry pi
 
-(Pi zero 2w, con bookworm 64b its)
+## Pi Zero 2w IMPORTANT NOTES
 
-**COPIAR CARPETA DE RPI A LOCAL**
+* Instalar **bookworm 64 bits**
+* Aumentar el swar para arreglar [Vs-code CRASH](https://pimylifeup.com/raspberry-pi-swap-file/)
+  
+* COPIAR CARPETA DE RPI A LOCAL
 
-> scp -r tadu@192.168.1.203:/home/tadu/splendid . 
+    > scp -r tadu@192.168.1.203:/home/tadu/splendid . 
 
 
 una vez conecatdo se puede saber si está bien conectado (y su direccion con
