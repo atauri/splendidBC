@@ -8,7 +8,7 @@ message: >-
   metadata from this file.
 type: software
 authors:
-  - given-names: david
+  - given-names: David
     family-names: Atauri
     email: david.atauri@urjc.es
     affiliation: Universidad Rey Juan Carlos
