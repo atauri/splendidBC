@@ -2,6 +2,11 @@
 
 (Pi zero 2w, con bookworm 64b its)
 
+**COPIAR CARPETA DE RPI A LOCAL**
+
+> scp -r tadu@192.168.1.203:/home/tadu/splendid . 
+
+
 una vez conecatdo se puede saber si está bien conectado (y su direccion con
 
 > i2cdetect -y 1

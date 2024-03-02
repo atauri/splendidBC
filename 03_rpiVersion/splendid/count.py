@@ -10,7 +10,7 @@ then insert in the server in MQTT
 import time
 import paho.mqtt.client as mqtt # use version 1.6.1 (see server version)
 import threading
-
+from getmac import get_mac_address as gma
 import board
 import busio
 from adafruit_cap1188.i2c import CAP1188_I2C
@@ -32,27 +32,18 @@ broker_address = "titi.etsii.urjc.es"
 topic = "splendid/insert/counter"
 
 def on_connect(client, userdata, flags, rc):
-    print("MQTT ?")
+    print("MQTT, on_connect")
     if rc==0:
         print("connected OK Returned code=",rc)
     else:
         print("Bad connection Returned code=",rc)
-
-def connect_mqtt():
-   
-    # Set Connecting Client ID
-    client = mqtt_client.Client(client_id)
-    # client.username_pw_set(username, password)
-    client.on_connect = on_connect
-    client.connect(broker, port)
-    return client
 
 # ============================================================
 
 # 4 buffers, oner per escape
 escapes = [[0]*bufferSize for _ in range(4)]
 
-def insertMqtt(inBees, outBees, mac="00:00:00:00:00:00",timeZone="Europe/Madrid", myMac="00:00:00:00:00:00"):
+def insertMqtt(inBees, outBees, mac="00:00:00:00:00:01",timeZone="Europe/Madrid", myMac="00:00:00:00:00:01"):
     payload = "{"+'"mac":"{}","inBees": {},"outBees": {},"timeZone":"{}","user": "{}"' \
         .format(mac,inBees, outBees, timeZone, myMac ) +"}"
     
@@ -137,23 +128,23 @@ def read():
 
 
 # MQTT: let's go ===============================================
-'''
-client = mqtt.Client("bc")
+
+client = mqtt.Client("bcPiZero")
 client.on_connect=on_connect
 client.connect(broker_address) 
 client.loop_start() # Inicio del bucle
-'''
+
 # cada x min un hilo vuelca los datos a mqtt
 def ejecutar(espera=60):
     global count
     while True:
-        insertMqtt(count["inBees"], count['outBees'])
+        insertMqtt(count["inBees"], count['outBees'], gma())
         count['inBees']=0
         count["outBees"]=0
         time.sleep(espera)
 
 '''insert into DB each 5 min'''
-#insertThread = threading.Thread(target=ejecutar, kwargs={'espera': 300,})
-#insertThread.start()
+insertThread = threading.Thread(target=ejecutar, kwargs={'espera': 300,})
+insertThread.start()
 
 read() # read data from sensors
