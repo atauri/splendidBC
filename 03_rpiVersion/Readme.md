@@ -1,16 +1,16 @@
-# Software for Raspberry pi
+# Raspberry Pi Software
 
 ## Pi Zero 2w IMPORTANT NOTES
 
 * Instalar **bookworm 64 bits**
-* Aumentar el swar para arreglar [Vs-code CRASH](https://pimylifeup.com/raspberry-pi-swap-file/)
+* Aumentar el tamño de swap para arreglar [Vs-code CRASH](https://pimylifeup.com/raspberry-pi-swap-file/)
   
 * COPIAR CARPETA DE RPI A LOCAL
 
     > scp -r tadu@192.168.1.203:/home/tadu/splendid . 
 
 
-* una vez conectado CAP1188 se puede saber si está bien conectado y su direccion con
+* una vez conectado CAP1188 por i2c se puede saber si está bien conectado y su direccion con
 
     > i2cdetect -y 1
 
@@ -18,22 +18,21 @@
 
     Si conecto 2 módulos hay que crear en python los objetos pasándole la dirección i2c
 
-## python libraries
+## Python libraries
 
 primero instalar virtualenv, hacer un entorno y activarlo
+A continuación instalar librerías de requirements.txt
 
-Para poder conectar los sensores por i2c y leer en python añado las siguientes librerías: 
+## Aplicaciones disponibles
 
-* adafruit-extended-bus==1.0.2
-* adafruit-circuitpython-cap1188==1.3.12
-* Scipi
+* **count.py** Cuenta los 4 escapes e inserta en MQTT con la mac del dispositivo
+* **validate.py** Selcciona un escape (de momento en código) y envía el buffer y las abejas encontradas por el socket a validateFront.html
 
-## conectar en py
+## TO-DO list
 
-```py
-import board
-import busio
-from adafruit_cap1188.i2c import CAP1188_I2C
-i2c = busio.I2C(board.SCL, board.SDA)
-````
-
+* Separar la funcion findPeaks
+* Invertir la curva para encontrar los valles en lugar de los picos
+* Ajustar los parámetros (desde la interfaz?)
+* Seleccionar escape desde la interfaz
+* Ajustar parámetros del módulo CAP1188
+* Hacer copias de seguridad de la tarjeta

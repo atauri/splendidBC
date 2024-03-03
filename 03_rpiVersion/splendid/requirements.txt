@@ -18,6 +18,7 @@ rpi-ws281x==5.0.0
 RPi.GPIO==0.7.1
 scikit-learn==1.4.1.post1
 scipy==1.12.0
+simple-websocket-server==0.4.4
 sysv-ipc==1.1.0
 threadpoolctl==3.3.0
 typing_extensions==4.10.0
