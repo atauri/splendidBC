@@ -36,3 +36,4 @@ A continuación instalar librerías de requirements.txt
 * Seleccionar escape desde la interfaz
 * Ajustar parámetros del módulo CAP1188
 * Hacer copias de seguridad de la tarjeta
+* Sacar la ip de la raspi del código (nombre del dispositivo?)

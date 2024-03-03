@@ -1,4 +1,4 @@
-'''Caputar un video y el bufer del sensor y gardarlo el disco
+'''Caputar un video y el bufer del sensor y guardarlo el disco
 para poseriormente sacar ventanas, prediciones y patronens de entrnamiento
 mejor que hacer en tiempo real'''
 
