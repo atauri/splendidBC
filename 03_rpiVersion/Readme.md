@@ -36,3 +36,5 @@ A continuación instalar librerías de requirements.txt
 * Seleccionar escape desde la interfaz
 * Ajustar parámetros del módulo CAP1188
 * Hacer copias de seguridad de la tarjeta
+* Poner tarjeta en modo lectura
+* Añadir RTC y hacer copia local de los datos
