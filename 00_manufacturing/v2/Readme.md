@@ -1,7 +1,7 @@
 # Planos V2.0
 
-**Diseño**: *David Atauri*
-**Modelado y Fabricación**: *Centro de Apoyo Tecnológico (CAT) URJC* 
+* **Diseño**: *David Atauri*
+* **Modelado y Fabricación**: *Centro de Apoyo Tecnológico (CAT) URJC* 
 
 ## Frontal
 
@@ -10,6 +10,8 @@
 ![alt text](image-1.png)|Pieza atonillada en la colmena. Fresado en pvc espumado (se puede comprar en Arteplástica). Grosor 1.5cm? 1.2cm?|
 |![alt text](image-2.png)|Marco que se fija a la pieza anterior y que se debe poder girar. En este marco se pegan los escapes ya conectados a la electrónica | 
 |![alt text](image-4.png)| Marco con los escapes pegados y el cajetín (abierto) para alojar la electrónica. Toda esta pieza es la que se debe poder quitar y poner de un lado o del otro|
+|![alt text](image-9.png)|Prueba de concepto en madera. Este sería el modo normal de funcionamiento|
+|![alt text](image-10.png)| los escapes con la electrónica invertidos para validar las entradas|
 |![alt text](image-5.png)|Posibilidad mostar en el mismo frontal 1 o 2 módulos de 4 escapes|
 
 ## Escapes
