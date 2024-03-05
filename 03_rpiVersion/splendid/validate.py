@@ -14,37 +14,37 @@ from adafruit_cap1188.i2c import CAP1188_I2C
 
 from simple_websocket_server import WebSocketServer, WebSocket
 import json
+import sys
 
 # SETUP -----------------------------------------
 # sensors are connected to rPi i2c, no serial, no esp...
 CURRENT = 1
-bufferSize = 1000 # Number of samples
+bufferSize = 5000 # Number of samples
 
-count={
-    "inEscapes":[1,0,0,1],
-    "outEscapes":[0,1,1,0],
-    "inBees":0,
-    "outBees":0
-}
+totalBees = 0
 
 # SOCKET =====================================================
-soc = None # referneia al socket
+soc = None # referne5a al socket
 
 class SimpleEcho(WebSocket):
     
     global soc ##
-
+    global CURRENT
+    global totalBees
 
     def enviarDatos(self, l):
         #print("SEND ", l)
-       
         self.send_message(json.dumps(l))
         
-     
 
     '''Algo me llega por el socket - - - - - - - - - - - - - - - - - -'''
     def handle(self):
-       print("algo llegó")
+       global CURRENT
+       global totalBees
+
+       print("algo llegó: ",self.data )
+       CURRENT = int(self.data)
+       totalBees = 0
 
     #------------------------------------------------------
     def connected(self):
@@ -57,8 +57,10 @@ class SimpleEcho(WebSocket):
         #hiloLeer.start()
 
     def handle_close(self):
-        print(self.address, 'closed')
-        terminar = False
+        print(self.address, 'cerrar y morir')
+        server.close()
+        sys.exit(0)
+        
 
 # ============================================================
 
@@ -74,15 +76,15 @@ def findPeaks(serie):
     # remove noise applying savgol filter
     def suavizar(serie):
         from scipy.signal import savgol_filter
-        suave = savgol_filter(serie, window_length=50, polyorder=2)
+        suave = savgol_filter(serie, window_length=30, polyorder=2)
         return suave
     
-    #suave =  suavizar(serie)
+    suave =  suavizar(serie)
     #print(serie)
-    peaks, _ = find_peaks(serie, height=.25, prominence=.2, distance=50)
+    peaks, _ = find_peaks(suave, height=.20, prominence=.2, distance=50)
     #print(peaks)
     #print(len(peaks)) # number of found peaks
-    return(peaks)
+    return(suave, peaks)
 
 
 def read():
@@ -91,7 +93,7 @@ def read():
     i2c = busio.I2C(board.SCL, board.SDA)
     cap = CAP1188_I2C(i2c)
     
-    global count
+    global totalBees
 
     def drawPeaks(peaks):
         foundBees=[0]*bufferSize
@@ -130,21 +132,26 @@ def read():
                 except: 
                     bees=[]
 
-                count["inBees"]+= len(bees) * count["inEscapes"][bf]
-                count["outBees"]+=len(bees) * count["outEscapes"][bf]
-                print(str(bf),":", str(len(bees)))
+                #count["inBees"]+= len(bees) * count["inEscapes"][bf]
+                #count["outBees"]+=len(bees) * count["outEscapes"][bf]
+                #print(str(bf),":", str(len(bees)))
             
             #print("\nin",count["inBees"],", out ",count["outBees"])
             
             #send to socket?
-            print("SEND!!")
-            peaks = findPeaks(escapes[CURRENT])
-            soc.enviarDatos(
-                {
-                    "buffer1": escapes[CURRENT],
+            print("SEND escape ", str(CURRENT))
+            print("totalBees", str(totalBees))
+            suave, peaks = findPeaks(escapes[CURRENT])
+            totalBees += len(peaks)
+            
+            msg={
+                    "buffer1": suave.tolist(),
                     "buffer2": drawPeaks(peaks),
-                    "bees": len(peaks)
-                })
+                    "bees": len(peaks),
+                    "totalBees": str(totalBees)
+                }
+            #print(msg)
+            soc.enviarDatos(msg)
 
             i=0 #reset buffer
             start_time = time.time()

@@ -88,12 +88,20 @@
 
 <body>
   <div id="app2">
-    <b >Contador capacitivo. Lectura de un sensor</b>
+    <center>
+        <b >Splendid BeeCounter.</b>
+        <p @click="changeEscape">One escape validation: {{escape}} (Fud bees: {{ms}})</p>
 
+    </center>
     <highcharts :options="chartOptions" ></highcharts>
     
-    <div id="numBees">
-        {{ms}}
+   
+    <div>
+        <img src="https://github.com/atauri/splendidBC/blob/main/add/licencia.png?raw=true" width="150">
+    <p></p> 
+    
+    </div>
+        
     </div>
  </div>
 
@@ -120,7 +128,7 @@ var app = new Vue({
                         //console.log(js.buffer1)
                         this.chartOptions.series[0].data = js.buffer1     
                         this.chartOptions.series[1].data = js.buffer2  
-                        this.ms = js.bees.n     
+                        this.ms = js.totalBees
                           
                     }
                   
@@ -148,10 +156,11 @@ var app = new Vue({
                                  animation: false,
                             },
                             title: {
-                                text: 'Counter validation'
+                                text: ''
                             },
                             yAxis: {
-                                max: 1
+                                max: 1,
+                                min:0
                             },
                            
                             series: [
@@ -183,13 +192,18 @@ var app = new Vue({
             
             connection: null,
             ms:"0",
+            escape:1,
             buffer:[]
                          
         }
     },
     
     methods:{
-        
+        changeEscape(){
+            this.escape+=1
+            if (this.escape>3) this.escape=0
+            this.connection.send(this.escape)
+        }
                     
     },
 
