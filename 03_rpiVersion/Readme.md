@@ -23,6 +23,8 @@
 primero instalar virtualenv, hacer un entorno y activarlo
 A continuación instalar librerías de requirements.txt
 
+Empollarse la librería de [cap1188](https://docs.circuitpython.org/projects/cap1188/en/latest/)
+
 ## Aplicaciones disponibles
 
 * **count.py** Cuenta los 4 escapes e inserta en MQTT con la mac del dispositivo

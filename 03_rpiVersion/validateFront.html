@@ -101,7 +101,7 @@
     <p></p> 
     
     </div>
-        
+        <button @click="matar">Matar app</button>
     </div>
  </div>
 
@@ -199,7 +199,11 @@ var app = new Vue({
     },
     
     methods:{
+        matar(){
+            this.connection.send("x")
+        },
         changeEscape(){
+            
             this.escape+=1
             if (this.escape>3) this.escape=0
             this.connection.send(this.escape)
