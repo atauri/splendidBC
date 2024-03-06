@@ -11,40 +11,50 @@ import threading
 import board
 import busio
 from adafruit_cap1188.i2c import CAP1188_I2C
-
 from simple_websocket_server import WebSocketServer, WebSocket
 import json
+import sys
+from events import Events
+import peaksLib
 
 # SETUP -----------------------------------------
 # sensors are connected to rPi i2c, no serial, no esp...
 CURRENT = 1
 bufferSize = 1000 # Number of samples
 
-count={
-    "inEscapes":[1,0,0,1],
-    "outEscapes":[0,1,1,0],
-    "inBees":0,
-    "outBees":0
-}
+totalBees = 0
 
 # SOCKET =====================================================
-soc = None # referneia al socket
+soc = None # referne5a al socket
+seguir = True
 
 class SimpleEcho(WebSocket):
     
     global soc ##
-
+    global CURRENT
+    global totalBees
 
     def enviarDatos(self, l):
         #print("SEND ", l)
-       
-        self.send_message(json.dumps(l))
-        
-     
+        try: self.send_message(json.dumps(l))
+        except: print("no estoy connected")
 
     '''Algo me llega por el socket - - - - - - - - - - - - - - - - - -'''
     def handle(self):
-       print("algo llegó")
+
+       print("algo llegó: ",self.data )
+
+       if self.data=="x":
+            print("BYE")
+            soc.close()
+            events.on_change("kill")            
+       
+       global CURRENT
+       global totalBees
+
+       CURRENT = int(self.data)
+       totalBees = 0
+       events.on_change("resetBuffer")  
 
     #------------------------------------------------------
     def connected(self):
@@ -57,32 +67,15 @@ class SimpleEcho(WebSocket):
         #hiloLeer.start()
 
     def handle_close(self):
-        print(self.address, 'closed')
-        terminar = False
+        print(self.address, 'cerrar y morir')
+        #server.close()
+     
+        
 
 # ============================================================
 
 # 4 buffers, oner per escape
 escapes = [[0]*bufferSize for _ in range(4)]
-
-
-def findPeaks(serie):
-
-    from scipy.signal import find_peaks
-    import numpy as np
-
-    # remove noise applying savgol filter
-    def suavizar(serie):
-        from scipy.signal import savgol_filter
-        suave = savgol_filter(serie, window_length=50, polyorder=2)
-        return suave
-    
-    #suave =  suavizar(serie)
-    #print(serie)
-    peaks, _ = find_peaks(serie, height=.25, prominence=.2, distance=50)
-    #print(peaks)
-    #print(len(peaks)) # number of found peaks
-    return(peaks)
 
 
 def read():
@@ -91,19 +84,13 @@ def read():
     i2c = busio.I2C(board.SCL, board.SDA)
     cap = CAP1188_I2C(i2c)
     
-    global count
-
-    def drawPeaks(peaks):
-        foundBees=[0]*bufferSize
-        for p in peaks: foundBees[p]=1
-        return foundBees
+    global totalBees
 
     i=0
     start_time = time.time()
-    print(start_time)
     
     # read forever...
-    while True:
+    while seguir:
         try:
            for escape in range(4): #0..3
 
@@ -126,29 +113,42 @@ def read():
             # Count each buffer and acum data
             for bf in range(4):
                 try: 
-                    bees = peaks(escapes[bf])
+                    # Do it in all escapes to mimic real algotithm
+                    bees = peaksLib.peaks(escapes[bf])
                 except: 
                     bees=[]
 
-                count["inBees"]+= len(bees) * count["inEscapes"][bf]
-                count["outBees"]+=len(bees) * count["outEscapes"][bf]
-                print(str(bf),":", str(len(bees)))
-            
-            #print("\nin",count["inBees"],", out ",count["outBees"])
-            
             #send to socket?
-            print("SEND!!")
-            peaks = findPeaks(escapes[CURRENT])
-            soc.enviarDatos(
-                {
-                    "buffer1": escapes[CURRENT],
-                    "buffer2": drawPeaks(peaks),
-                    "bees": len(peaks)
-                })
+            print("SEND escape ", str(CURRENT))
+            print("totalBees", str(totalBees))
+            suave, peaks = peaksLib.findPeaks(escapes[CURRENT])
+            totalBees += len(peaks)
+            
+            msg={
+                    "buffer1": suave.tolist(),
+                    "buffer2": peaksLib.drawPeaks(peaks, bufferSize),
+                    "bees": len(peaks),
+                    "totalBees": str(totalBees)
+                }
+            #print(msg)
+            if soc: soc.enviarDatos(msg)
 
             i=0 #reset buffer
             start_time = time.time()
         i+=1         
+
+def processEvent(e):
+    print("event: ",e)
+    global seguir
+
+    if e=="kill":
+        seguir = False
+        hiloSc.stop()
+
+    if e=="resetBuffer":
+        escapes[CURRENT] = [0]* bufferSize
+        print("reseteado")
+    #sys.exit(0)
 
 # do the socket s s s s s s s s s s s s s s s s s s s s s s s s s s s s 
         
@@ -158,12 +158,17 @@ def levantarSocket():
     print("levantar socket")
     server.serve_forever()
 
+events = Events()
+events.on_change += processEvent
+
 server = WebSocketServer('0.0.0.0', 9000, SimpleEcho)
+
 hiloSc = threading.Thread(target=levantarSocket)
 hiloSc.start()
 
 
 # read data from sensors
 print("leer")
+
 read() 
        
