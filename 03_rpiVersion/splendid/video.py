@@ -44,11 +44,11 @@ def setupVideo(nombre):
     cameraCapture = cv2.VideoCapture(-1)
     # rame rate or frames per second
     fps = 25
+    fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
     # Width and height of the frames in the video stream
     size = (int(cameraCapture.get(cv2.CAP_PROP_FRAME_WIDTH)),
                 int(cameraCapture.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-    videoWriter = cv2.VideoWriter(nombre+'.avi', 
-    cv2.VideoWriter_fourcc('X','V','I','D'), fps, size) # este funciona bien en la pi zero 2w
+    videoWriter = cv2.VideoWriter(nombre+'.mp4', fourcc, fps, size) # este funciona bien en la pi zero 2w
     print("writer ok")
     return cameraCapture, videoWriter
 
