@@ -43,12 +43,12 @@ def setupVideo(nombre):
 
     cameraCapture = cv2.VideoCapture(-1)
     # rame rate or frames per second
-    fps = 15
+    fps = 25
     # Width and height of the frames in the video stream
     size = (int(cameraCapture.get(cv2.CAP_PROP_FRAME_WIDTH)),
                 int(cameraCapture.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-    videoWriter = cv2.VideoWriter(nombre+'.mp4', 
-    cv2.VideoWriter_fourcc('D','I','V','X'), fps, size) # este funciona bien en la pi zero 2w
+    videoWriter = cv2.VideoWriter(nombre+'.avi', 
+    cv2.VideoWriter_fourcc('X','V','I','D'), fps, size) # este funciona bien en la pi zero 2w
     print("writer ok")
     return cameraCapture, videoWriter
 
@@ -94,8 +94,8 @@ def grabarVideo(video, writer):
 
         #success, frame = video.read()
         #writer.write(frame)
-        print(bc.position)
-
+        #print(bc.position)
+        pass
     video.release()
 
     # esperar a que el sensor sute la basura
