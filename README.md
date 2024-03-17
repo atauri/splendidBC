@@ -6,9 +6,8 @@ Los contadores de abejas son dispositivos electrónicos que cuentan las abejas q
 
 La información más destacable es la pérdida diaria de abejas, calculada como la diferencia entre el número de abejas que salió y el que entró de la colmena a lo largo de un día.
 
-![alt text](image-1.png)
-
-* In and out along one day: It is late winter... bees are old and mortallty is high*
+![alt text](image-2.png)
+*In and out along one day (19 march, late winter/early spring)*
 
 Sin embargo los contadores desarrollados tenían dos problemas:
 
