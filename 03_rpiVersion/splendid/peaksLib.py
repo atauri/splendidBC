@@ -24,7 +24,7 @@ def findPeaks(serie):
     peaks, _ = find_peaks(suave, height=peakHeight, prominence=prominence, distance=peakWitdh)
     #print(peaks)
     #print(len(peaks)) # number of found peaks
-    return(suave, peaks)
+    return(suave.tolist(), peaks.tolist())
 
 def drawPeaks(peaks, bufferSize):
         foundBees=[0]*bufferSize

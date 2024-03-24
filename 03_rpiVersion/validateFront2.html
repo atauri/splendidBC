@@ -90,20 +90,41 @@
   <div id="app2">
     <center>
         <b >Splendid BeeCounter.</b>
-        <p @click="changeEscape">One escape validation: {{escape}} (Fud bees: {{ms}})</p>
-
+        <p>Four escapes validation</p>
     </center>
-    <highcharts :options="chartOptions" ></highcharts>
-    
-   
+        
     <div>
+        <p>Show Escapes </p>
+        <div>
+            <span v-for="see, index in seeTunel"
+                @click="change(index)"> {{see}} | </span>
+        </div>
+    
+        <p></p>
+
+    </div>
+    <!----  -->
+    <div v-for="escape, index in escapes">
+       
+      <div v-if="seeTunel[index]">
+        {{escape.escape}} <b>BEES: {{escape.total}}</b>
+        <highcharts :options="getChart(escape)" ></highcharts> 
+      </div>
+    </div>
+
+  
+    <div>   
         <img src="https://github.com/atauri/splendidBC/blob/main/add/licencia.png?raw=true" width="150">
     <p></p> 
     
     </div>
         <button @click="matar">Matar app</button>
+        <button @click="muestrear">5000 muestras</button>
+        <br>
+        <small>{{ms}}</small>
+
+        
     </div>
- </div>
 
     <script>
         Vue.use(HighchartsVue.default)
@@ -123,18 +144,11 @@ var app = new Vue({
 
                    var js = JSON.parse(event.data)
                    //vm.buffer=event.data 
-                 
-                   if (js.buffer1){
-                       
-                        //console.log(js.buffer1)
-                        this.chartOptions.series[0].data = js.buffer1     
-                        this.chartOptions.series[1].data = js.buffer2  
-                        this.ms = js.totalBees
-                          
-                    }
+                   console.log(js)
+                   this.escapes.push(js)
                   
                 } catch (error) {
-                    vm.buffer=error
+                    console.log(error)
                 }
             }
             this.connection.onclose = function(e) {  
@@ -146,11 +160,26 @@ var app = new Vue({
     },
     data() {
         return {
-           
-            chartOptions:{  
+            seeTunel:[true, true, true, true],
+            connection: null,
+            ms:"0",
+            escapes:[]
+                         
+        }
+    },
+    
+    methods:{
+        change(x){
+            this.ms=x
+            this.seeTunel[parseInt(x)] = !this.seeTunel[parseInt(x)]
+            //this.ms=this.seeTunel[parseInt(x)]
+        },
+        getChart(escape){
+            return{  
                             chart:{
                                 zoomType:"x",
-                                type: "area",
+                                //type: "area",
+                                height:"250",
                                 tooltip: {
                                     enabled: false
                                 },
@@ -166,53 +195,57 @@ var app = new Vue({
                            
                             series: [
                             {
-                                data: [0,1,3,1,0],     
-                                fillColor: 'rgba(100,0,0,0.2)', 
+                                data: escape.spline,     
+                                color: "#FF0000",
                                 lineWidth:1,
-                                name: 'int',
+                                name: 'sensors',
                                     marker: {
                                         enabled: false
                                     },
                                     threshold: null
                             },
                             {
-                                data: [0,1,3,1,0],     
-                                fillColor: 'rgba(0,100,0,0.2)', 
+                                data: escape.peaks,     
+                                color: "#000000",
                                 lineWidth:1,
-                           
-                                name: 'ext',
+                                name: 'bees',
                                     marker: {
                                         enabled: false
                                     },
                                     threshold: null
-                                
+                            },
+                            {
+                                data: escape.interior,     
+                                color: "#cccccc",
+                                lineWidth:1,
+                                name: 'bees',
+                                    marker: {
+                                        enabled: false
+                                    },
+                                    threshold: null
+                            },
+                            {
+                                data: escape.exterior,     
+                                color: "#cccccc",
+                                lineWidth:1,
+                                name: 'bees',
+                                    marker: {
+                                        enabled: false
+                                    },
+                                    threshold: null
                             },
                             ],
                            
-                    },
-            
-            connection: null,
-            ms:"0",
-            escape:1,
-            buffer:[]
-                         
-        }
-    },
-    
-    methods:{
+                    }
+        },
         matar(){
             this.connection.send("x")
         },
-        changeEscape(){
-            
-            this.escape+=1
-            if (this.escape>3) this.escape=0
-            this.connection.send(this.escape)
+        muestrear(){
+            this.escapes=[]
+            this.connection.send("5000")
         }
-                    
     },
-
-
 })
     </script>
 

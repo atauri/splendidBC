@@ -3,7 +3,7 @@
 
 '''
 reads data from sensor,
-and send to UI by socket
+and send it to UI by socket
 '''
 
 import time
@@ -17,13 +17,11 @@ from events import Events
 import peaksLib
 
 import buzz
-
+buzz.beep(1)
 
 # SETUP -----------------------------------------
-# sensors are connected to rPi i2c, no serial, no esp...
-CURRENT = 1
-bufferSize = 5000 # Number of samples
 
+bufferSize = 5000 # Number of samples
 totalBees = 0
 
 # SOCKET =====================================================
@@ -32,14 +30,15 @@ seguir = True
 
 class SimpleEcho(WebSocket):
     
-    global soc ##
-    global CURRENT
+    global soc
     global totalBees
 
     def enviarDatos(self, l):
-        #print("SEND ", l)
-        try: self.send_message(json.dumps(l))
-        except: print("no estoy connected")
+        print("SEND ")
+        try: 
+            self.send_message(json.dumps(l))
+        except Exception as e: 
+            print(e)
 
     '''Algo me llega por el socket - - - - - - - - - - - - - - - - - -'''
     def handle(self):
@@ -48,63 +47,89 @@ class SimpleEcho(WebSocket):
 
        if self.data=="x":
             print("BYE")
-            soc.close()
             events.on_change("kill")            
-       
-       global CURRENT
-       global totalBees
-
-       CURRENT = int(self.data)
-       totalBees = 0
-       events.on_change("resetBuffer")  
+       else:
+           print(self.data) 
+           events.on_change(self.data)
 
     #------------------------------------------------------
     def connected(self):
        
         global soc
         soc = self
-
         print(self.address, 'connectado a la interfaz')
-        #hiloLeer = threading.Thread(target=self.enviarDatos)
-        #hiloLeer.start()
+       
 
     def handle_close(self):
-        print(self.address, 'cerrar y morir')
-        #server.close()
-     
+        print(self.address, 'el socket se ha cerrado')
+ 
         
 
 # ============================================================
 
-# 4 buffers, oner per escape
-escapes = [[0]*bufferSize for _ in range(4)]
 
-def read():
+# read <size> samples
+def read(size):
 
     # connect
     i2c = busio.I2C(board.SCL, board.SDA)
     cap = CAP1188_I2C(i2c)
+    cap.recalibrate()
+
+    # 4 buffers, oner per escape
+    escapes = [[0]*size for _ in range(4)]
+    interior = [[0]*size for _ in range(4)]
+    exterior = [[0]*size for _ in range(4)]
+    buzz.beep(1)
     
     global totalBees
-
+    global soc
+   
     i=0
     start_time = time.time()
-    
-    # read forever...
-    while seguir:
+
+    # read 4 excapes {size} times...
+    while i<size:
         try:
            for escape in range(4): #0..3
-
+              
               x = cap[(escape*2)+1].raw_value/127.0 # 1,3,5,7
               y = cap[(escape*2)+2].raw_value/127.0 # 2,4,6,8
               if x<0:x=0
               if y<0: y=0
+              interior[escape][i]=x
+              exterior[escape][i]=y
               escapes[escape][i] = x*y
-
-        except: pass
         
-        # Whe buffer is full counte all the escapes    
-        if i>= bufferSize:
+        except: pass
+        i+=1
+
+    # Buffers llenos, procesar:
+    buzz.beep(1)    
+    print("buffers llenos")
+
+    for bf in range(4):
+        try: 
+            # Do it in all escapes to mimic real algotithm
+            spline, bees = peaksLib.findPeaks(escapes[bf])
+            msg={
+                "escape": bf,
+                "spline": spline,
+                "interior": interior[bf],
+                "exterior": exterior[bf],
+                "peaks": peaksLib.drawPeaks(bees, size),
+                "total": len(bees)
+            }
+            
+            if soc: 
+                soc.enviarDatos(msg)
+        except Exception as e: 
+            print(e)
+            bees=[]
+
+    # send buffers through socket
+            
+    '''if i>= buff
             
             end_time = time.time()
             # Calculate elapsed time
@@ -136,22 +161,20 @@ def read():
             totalBees=0
             i=0 #reset buffer
             start_time = time.time()
-            buzz.beep(1)
-        i+=1         
+            buzz.beep(1)'''
+    i+=1         
 
 def processEvent(e):
     print("event: ",e)
-    global seguir
+
 
     if e=="kill":
-        seguir = False
-        hiloSc.stop()
+        print("morir")
+        #hiloSc.stop()
 
-    if e=="resetBuffer":
-        escapes[CURRENT] = [0]* bufferSize
-        print("reseteado")
-        buzz.beeps(1)
-    #sys.exit(0)
+    # number of samples are comming
+    else: read(int(e))
+    
 
 # do the socket s s s s s s s s s s s s s s s s s s s s s s s s s s s s 
         
@@ -171,6 +194,6 @@ hiloSc.start()
 
 
 # read data from sensors
-print("leer")
-read() 
+#print("leer")
+#read() 
        
