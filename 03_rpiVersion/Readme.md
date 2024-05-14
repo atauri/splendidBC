@@ -18,6 +18,9 @@
   
     > scp -r tadu@splendidBC2.local:/home/tadu/samples/ .
 
+* Convertir en batch
+    > for file in *.h264; do ffmpeg -i "$file" "$(basename "$file" .${file##*.}).mp4"; done
+
 Luego los tengo que subir a titi para poder verlos desde la web 
 
 * una vez conectado CAP1188 por i2c se puede saber si está bien conectado y su direccion con
