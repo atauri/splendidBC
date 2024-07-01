@@ -28,53 +28,31 @@
 
   <style>
         body{
-            margin:5em;
+            margin:auto;
+            max-width: 800px;
         }
       #titulo{
-        padding-top: 10em !important;
-      }  
-      .col{
-          background-color: #eee;
-          padding: 2px;
+        margin-top: 5em;
+      } 
+
+      #botones{
+        margin-top: 5em;
+        /*background-color: yellow;*/
+        height: 8em;
       }
-      .col:hover{
-          background-color: orange;
+      .escape{
+        font-size: 3em;
+        background-color: #ccc;
+        font-weight: bolder;
+        padding: .75em;
+        margin: .25em;
+        color: white;
+        border-radius: .2em;
+        box-shadow: 4px 4px 9px #555;
       }
-      button {
-        margin-top: 25px;
-        background-color:rgb(168, 167, 167);
-        color: #fff;
-        border:none;
-        font-size: 14px;
-        font-style: normal;
-        font-weight: 100;
-        border-radius:5px;
-        padding: 10px;
-    }
-   
-    .nota{
-        margin: 20px;
-        font-size: 12px;
-        color:#999;
-    }
-    #patrones{
-        text-align: center;
-    }
-    .patron{
-        display: inline-block;
-        width: 200px;
-        margin: 15px;
-        padding: 5px;
-        border-radius: 10px;
-        box-shadow: 5px 5px 10px #ccc;
-    }
-    .tituloPatron{
-        margin-top: 20px;
-    }
-    .tituloPatron p{
-        margin: 5px;
-        font-size: 12px;
-    }
+
+      
+    
     #numBees{
         position: fixed;
         top:2em;
@@ -82,48 +60,56 @@
         font-size: 100px;
         font-weight: bold;
     }
+    #graficas{
+        overflow: scroll;
+    }
   </style>
 
 </head>
 
 <body>
   <div id="app2">
+   <div id = "titulo">
     <center>
         <b >Splendid BeeCounter.</b>
         <p>Four escapes validation</p>
     </center>
+   </div>
         
     <div>
-        <p>Show Escapes </p>
-        <div>
-            <span v-for="see, index in seeTunel"
-                @click="change(index)"> {{see}} | </span>
-        </div>
-    
-        <p></p>
-
+       
+       <center>
+            <div id="botones">
+            <span class="escape" v-for="see, index in seeTunel"
+                @click="change(index)">{{see}} </span>
+            </div>
+            
+       </center>
+       
     </div>
     <!----  -->
-    <div v-for="escape, index in escapes">
+    <div id="graficas" v-for="escape, index in escapes.slice().reverse()">
        
-      <div v-if="seeTunel[index]">
-        {{escape.escape}} <b>BEES: {{escape.total}}</b>
-        <highcharts :options="getChart(escape)" ></highcharts> 
+      <div>
+         <b>BEES: {{escape.total}}</b>
+            <highcharts :options="getChart(escape)" ></highcharts> 
       </div>
     </div>
 
   
-    <div>   
-        <img src="https://github.com/atauri/splendidBC/blob/main/add/licencia.png?raw=true" width="150">
-    <p></p> 
-    
-    </div>
-        <button @click="matar">Matar app</button>
-        <button @click="muestrear">5000 muestras</button>
-        <br>
-        <small>{{ms}}</small>
 
-        
+   
+    </div>
+       
+        <!--<button @click="muestrear">5000 muestras</button> -->
+        <br>
+
+
+        <!--
+        <div>   
+            <img src="https://github.com/atauri/splendidBC/blob/main/add/licencia.png?raw=true" width="150">
+        <p></p> 
+        -->
     </div>
 
     <script>
@@ -134,25 +120,24 @@ var app = new Vue({
     el: "#app2",
     mounted: function(){
         
-            this.connection = new WebSocket('ws://192.168.1.203:9000/');
+            this.connection = new WebSocket('ws://192.168.1.133:9000/');
 
-            //llega un mensaje
             const vm = this  
             this.connection.onmessage = (event) => {    
-                
+                // llega un mensaje
+    
                 try {
-
                    var js = JSON.parse(event.data)
                    //vm.buffer=event.data 
                    console.log(js)
                    this.escapes.push(js)
+                   vm.total += js.total
                   
                 } catch (error) {
                     console.log(error)
                 }
             }
             this.connection.onclose = function(e) {  
-                  
                 }
             this.connection.onerror = (event) => {
                 console.log(event)
@@ -160,9 +145,10 @@ var app = new Vue({
     },
     data() {
         return {
-            seeTunel:[true, true, true, true],
+            seeTunel:[0, 1, 2, 3],
             connection: null,
             ms:"0",
+            total:0,
             escapes:[]
                          
         }
@@ -170,16 +156,20 @@ var app = new Vue({
     
     methods:{
         change(x){
+
             this.ms=x
-            this.seeTunel[parseInt(x)] = !this.seeTunel[parseInt(x)]
+            //this.seeTunel[parseInt(x)] = !this.seeTunel[parseInt(x)]
             //this.ms=this.seeTunel[parseInt(x)]
+            //alert(x)
+            this.muestrear(x)
         },
+
         getChart(escape){
             return{  
                             chart:{
                                 zoomType:"x",
                                 //type: "area",
-                                height:"250",
+                                height:"200",
                                 tooltip: {
                                     enabled: false
                                 },
@@ -195,10 +185,20 @@ var app = new Vue({
                            
                             series: [
                             {
-                                data: escape.spline,     
+                                data: escape.intPeaks,     
                                 color: "#FF0000",
                                 lineWidth:1,
-                                name: 'sensors',
+                                name: 'iP',
+                                    marker: {
+                                        enabled: false
+                                    },
+                                    threshold: null
+                            },
+                            {
+                                data: escape.extPeaks,     
+                                color: "#00:FF00",
+                                lineWidth:1,
+                                name: 'eP',
                                     marker: {
                                         enabled: false
                                     },
@@ -216,7 +216,7 @@ var app = new Vue({
                             },
                             {
                                 data: escape.interior,     
-                                color: "#ffaaaa",
+                                color: "#ff5555",
                                 lineWidth:1,
                                 name: 'bees',
                                     marker: {
@@ -226,7 +226,7 @@ var app = new Vue({
                             },
                             {
                                 data: escape.exterior,     
-                                color: "#aaffaa",
+                                color: "#55ff55",
                                 lineWidth:1,
                                 name: 'bees',
                                     marker: {
@@ -239,11 +239,13 @@ var app = new Vue({
                     }
         },
         matar(){
+            //alert("parar")
             this.connection.send("x")
+            
         },
-        muestrear(){
+        muestrear(x){
             this.escapes=[]
-            this.connection.send("5000")
+            this.connection.send(x)
         }
     },
 })
