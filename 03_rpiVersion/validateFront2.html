@@ -50,6 +50,9 @@
         border-radius: .2em;
         box-shadow: 4px 4px 9px #555;
       }
+      .selected{
+        background-color: orangered !important;
+      }
 
       
     
@@ -80,7 +83,10 @@
        
        <center>
             <div id="botones">
-            <span class="escape" v-for="see, index in seeTunel"
+            <span 
+                class="escape" 
+                :class={selected:index==ms}
+                v-for="see, index in seeTunel"
                 @click="change(index)">{{see}} </span>
             </div>
             
@@ -169,7 +175,7 @@ var app = new Vue({
                             chart:{
                                 zoomType:"x",
                                 //type: "area",
-                                height:"200",
+                                height:"400",
                                 tooltip: {
                                     enabled: false
                                 },
@@ -184,31 +190,12 @@ var app = new Vue({
                             },
                            
                             series: [
-                            {
-                                data: escape.intPeaks,     
-                                color: "#FF0000",
-                                lineWidth:1,
-                                name: 'iP',
-                                    marker: {
-                                        enabled: false
-                                    },
-                                    threshold: null
-                            },
-                            {
-                                data: escape.extPeaks,     
-                                color: "#00:FF00",
-                                lineWidth:1,
-                                name: 'eP',
-                                    marker: {
-                                        enabled: false
-                                    },
-                                    threshold: null
-                            },
+                            
                             {
                                 data: escape.peaks,     
                                 color: "#000000",
                                 lineWidth:1,
-                                name: 'bees',
+                                name: 'Bees',
                                     marker: {
                                         enabled: false
                                     },
@@ -218,7 +205,7 @@ var app = new Vue({
                                 data: escape.interior,     
                                 color: "#ff5555",
                                 lineWidth:1,
-                                name: 'bees',
+                                name: 'Smoothed',
                                     marker: {
                                         enabled: false
                                     },
@@ -226,9 +213,10 @@ var app = new Vue({
                             },
                             {
                                 data: escape.exterior,     
-                                color: "#55ff55",
+                                color: "#55aa55",
                                 lineWidth:1,
-                                name: 'bees',
+                                visible: false, //defalut
+                                name: 'Signal',
                                     marker: {
                                         enabled: false
                                     },
