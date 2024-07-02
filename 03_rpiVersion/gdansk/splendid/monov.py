@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC-BY-NC-SA-1
 
 '''
+VALIDATION - Mono version (1 electrode per escape)
 reads data from sensor,
 and send it to UI by socket
 '''
@@ -15,14 +16,15 @@ from simple_websocket_server import WebSocketServer, WebSocket
 import json
 from events import Events
 import peaksLib
-
 import buzz
-buzz.beep(1)
 
 # SETUP -----------------------------------------
 
-bufferSize = 5000 # Number of samples
+bufferSize = 6000 # Number of samples
 totalBees = 0
+buffer2send = False
+
+stop = True
 
 # SOCKET =====================================================
 soc = None # referne5a al socket
@@ -32,10 +34,13 @@ class SimpleEcho(WebSocket):
     
     global soc
     global totalBees
+    global stop
+
 
     def enviarDatos(self, l):
         print("SEND ")
         try: 
+            
             self.send_message(json.dumps(l))
         except Exception as e: 
             print(e)
@@ -61,122 +66,106 @@ class SimpleEcho(WebSocket):
        
 
     def handle_close(self):
+        
+        global buffer2send
         print(self.address, 'el socket se ha cerrado')
- 
+        buffer2send = True
         
 
 # ============================================================
 
 
 # read <size> samples
-def read(size):
-    print("cap?")
+def read(size, bf2send):
     
+    #if not bf2send:
+    #    print("no escapes selected")
+    #    return
+
     # connect
     i2c = busio.I2C(board.SCL, board.SDA)
-    cap = CAP1188_I2C(i2c,41) #default 41, 40 al conectar ad y vin directo
-    print("cap ok")
-    cap.recalibrate()
+    cap = CAP1188_I2C(i2c)
+    #cap.recalibrate()
 
+    cap.averaging = 4 #averages = (1, 2, 4, 8, 16, 32, 64, 128)
+    cap.sample="1.28ms" #("320us", "640us", "1.28ms", "2.56ms")
+    cap.cycle="35ms" # "35ms", "70ms", "105ms", "140ms"
+    print("bf2send: ",str(bf2send)) 
+    print(f"Sensor Initial Configuration Values: {cap.averaging, cap.sample, cap.cycle}")
     # 4 buffers, oner per escape
     escapes = [[0]*size for _ in range(4)]
-    interior = [[0]*size for _ in range(4)]
-    exterior = [[0]*size for _ in range(4)]
-    buzz.beep(1)
-    
+           
     global totalBees
     global soc
-   
+      
     i=0
     start_time = time.time()
 
     # read 4 excapes {size} times...
+    buzz.beep(1)
     while i<size:
         try:
            for escape in range(4): #0..3
-              
-              x = cap[(escape*2)+1].raw_value/127.0 # 1,3,5,7
-              y = cap[(escape*2)+2].raw_value/127.0 # 2,4,6,8
-              if x<0:x=0
-              if y<0: y=0
-              interior[escape][i]=x
-              exterior[escape][i]=y
-              escapes[escape][i] = x*y
-        
-        except: pass
+               escapes[escape][i] = (127+cap.delta_count(escape+1))/255.0
+                  
+        except Exception as e: print(e)
         i+=1
 
     # Buffers llenos, procesar:
-    buzz.beep(1)    
+    buzz.beep(1)
     print("buffers llenos")
 
     for bf in range(4):
         try: 
             # Do it in all escapes to mimic real algotithm
-            spline, bees = peaksLib.findPeaks(escapes[bf])
+            peaks, suave = peaksLib.countBeesMono(escapes[bf].copy())
             msg={
-                "escape": bf,
-                "spline": spline,
-                "interior": interior[bf],
-                "exterior": exterior[bf],
-                "peaks": peaksLib.drawPeaks(bees, size),
-                "total": len(bees)
+                
+                #"spline": spline,
+                "interior": suave, ##interior[bf],
+                "exterior": escapes[bf], ##exterior[bf],
+                "intPeaks": [], #peaksLib.drawPeaks(peaks, size, .25),
+                "extPeaks": [], #peaksLib.drawPeaks(extPeaks, size, .25),
+                "peaks": peaksLib.drawPeaks(peaks, size, 1),# marcas verticales
+                "total": len(peaks)
             }
             
-            if soc: 
+            if soc and bf == bf2send: 
+                print("buffer:"+ str(bf)+" t:"+str(time.time()-start_time))
                 soc.enviarDatos(msg)
         except Exception as e: 
             print(e)
-            bees=[]
+            peaks=[]
 
-    # send buffers through socket
-            
-    '''if i>= buff
-            
-            end_time = time.time()
-            # Calculate elapsed time
-            elapsed_time = end_time - start_time
-            print("\nElapsed time: ", elapsed_time)
-            buzz.beep(1)
-            # Count each buffer and acum data
-            for bf in range(4):
-                try: 
-                    # Do it in all escapes to mimic real algotithm
-                    bees = peaksLib.peaks(escapes[bf])
-                except: 
-                    bees=[]
-
-            #send to socket?
-            print("SEND escape ", str(CURRENT))
-            print("totalBees", str(totalBees))
-            suave, peaks = peaksLib.findPeaks(escapes[CURRENT])
-            totalBees += len(peaks)
-            
-            msg={
-                    "buffer1": suave.tolist(),
-                    "buffer2": peaksLib.drawPeaks(peaks, bufferSize),
-                    "bees": len(peaks),
-                    "totalBees": str(totalBees)
-                }
-            #print(msg)
-            if soc: soc.enviarDatos(msg)
-            totalBees=0
-            i=0 #reset buffer
-            start_time = time.time()
-            buzz.beep(1)'''
     i+=1         
 
-def processEvent(e):
-    print("event: ",e)
+def doBucle(b):
 
-
-    if e=="kill":
-        print("morir")
-        #hiloSc.stop()
-
-    # number of samples are comming
-    else: read(int(e))
+    global buffer2send
+    global stop
+    print("doBucle, escape: ",b)
+    #while not stop:
+    #    print("leer buffer: ",b, bufferSize)
+    read(bufferSize, b-1)
     
+    print("he terminado")
+
+def processEvent(e):
+
+    global buffer2send
+    global stop
+
+    print("event: ",e)
+    if e=="kill":
+        print("parar")
+        stop = True
+
+    # numberof escape
+    else:
+        stop = False
+        buffer2send = int(e)+1
+        threading.Thread(target=doBucle, args=(buffer2send,)).start()
+
 
 # do the socket s s s s s s s s s s s s s s s s s s s s s s s s s s s s 
         
