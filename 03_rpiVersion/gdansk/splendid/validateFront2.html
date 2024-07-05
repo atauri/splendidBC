@@ -46,6 +46,18 @@
         /*background-color: yellow;*/
         height: 8em;
       }
+      .help{
+        padding: 4em;
+        font-size: 12px;
+        color: #555;
+        margin-top: 6em;
+      }
+      .help p{
+        margin: .3em;
+      }
+      .ip{
+        margin-left: 6em;
+      }
       .escape{
         font-size: 3em;
         background-color: #ccc;
@@ -85,6 +97,10 @@
     </center>
    </div>
         
+   <div class="ip">
+    <p @click="cambiarIP"> IP: {{ip}}</p>
+    <p> {{estado}}<p/>
+   </div>
     <div>
        
        <center>
@@ -99,6 +115,8 @@
        </center>
        
     </div>
+
+   
     <!----  -->
     <div id="graficas" v-for="escape, index in escapes.slice().reverse()">
        
@@ -109,7 +127,23 @@
     </div>
 
   
-
+    <div class = "help">
+        
+            <p>
+                ESta aplicación sirve validar los túneles de un contador de 4 túneles (versión julio 2024).
+            </p>
+            <p>
+                1 - conecte la raspberry y el ordenador A LA MISMA red (ejemplo splendid/qwerty20)
+            </p>
+            <p> - Asegúrese de que el contador está corriendo la aplicación <b>monov.py</b></p>
+            <p> 2- Averigue la ip de su raspberry e introdúzcala en la ip
+            (click en IP). Si ha salido bien aparecerá el mensaje "conectado :-))</p>
+            <p>
+                3-click en uno de los túneles: encuchará un beep cuando el contador comience a contadory otro cuando termine
+            </p>
+            <p> 4- La página mostrará la curva de los valores de capacidad registrado y la abejas contadas</p>
+        
+    </div>
    
     </div>
        
@@ -132,7 +166,25 @@ var app = new Vue({
     el: "#app2",
     mounted: function(){
         
-            this.connection = new WebSocket('ws://192.168.1.133:9000/');
+     this.conectarSocket()       
+
+    },
+    data() {
+        return {
+            ip: "192.168.1.141",
+            estado: "NOT connected",
+            seeTunel:[0, 1, 2, 3],
+            connection: null,
+            ms:"0",
+            total:0,
+            escapes:[]
+                         
+        }
+    },
+    
+    methods:{
+        conectarSocket(){
+            this.connection = new WebSocket('ws:/'+this.ip+':9000/');
 
             const vm = this  
             this.connection.onmessage = (event) => {    
@@ -149,24 +201,19 @@ var app = new Vue({
                     console.log(error)
                 }
             }
-            this.connection.onclose = function(e) {  
-                }
+       
             this.connection.onerror = (event) => {
                 console.log(event)
-            }    
-    },
-    data() {
-        return {
-            seeTunel:[0, 1, 2, 3],
-            connection: null,
-            ms:"0",
-            total:0,
-            escapes:[]
-                         
-        }
-    },
-    
-    methods:{
+                this.estado="Error"
+            } 
+            
+            this.connection.addEventListener("open", (event) => {
+                this.estado="Connected :-)"
+            });
+            this.connection.addEventListener("close", (event) => {
+                this.estado="NOT Connected :-("
+            });
+        },
         change(x){
 
             this.ms=x
@@ -231,6 +278,10 @@ var app = new Vue({
                             ],
                            
                     }
+        },
+        cambiarIP(){
+            this.ip = prompt("Counter IP ?");
+            this.conectarSocket()
         },
         matar(){
             //alert("parar")
