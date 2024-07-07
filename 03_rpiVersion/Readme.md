@@ -49,5 +49,9 @@ Empollarse la librería de [cap1188](https://docs.circuitpython.org/projects/cap
 * Ajustar los parámetros (desde la interfaz?)
 * Ajustar parámetros del módulo CAP1188
 * Hacer copias de seguridad de la tarjeta
+<<<<<<< HEAD
 * Poner tarjeta en modo lectura
 * Añadir RTC y hacer copia local de los datos
+=======
+* Sacar la ip de la raspi del código (nombre del dispositivo?)
+>>>>>>> main

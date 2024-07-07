@@ -2,6 +2,12 @@
 
 # Splendid BeeCounter
 
+<div>
+    <img src="./add/licencia.png" width="150">
+    <p></p> 
+    
+</div>
+
 Los contadores de abejas son dispositivos electrónicos que cuentan las abejas que entran y salen de la colmena ininterrumpidamente. Fueron desarrollados recientemente y suscitaron un gran interés por lo relevante de la información que proporcionan.
 
 La información más destacable es la pérdida diaria de abejas, calculada como la diferencia entre el número de abejas que salió y el que entró de la colmena a lo largo de un día.
@@ -25,7 +31,10 @@ En un segundo momento pretendemos crear una red de colmenares monitorizados de m
 
 <div>
     <img src="https://github.com/Atauri.png" width="100" height="100" display="inline"> 
+    <p></p>
     <small>David ATauri</small>
 </div>
 
-TO-DO: añadir a la peña
+## TO-DO list
+
+* Añadir a la peña

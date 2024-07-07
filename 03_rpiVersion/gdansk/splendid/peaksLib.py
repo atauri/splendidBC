@@ -3,60 +3,30 @@ import numpy as np
 
 # Setup ----
 # smooth curve
-witdh = 100
-order = 1
+witdh = 30
+order = 2
 
 # peak detection
-peakHeight = .2
-prominence = .15
-peakWitdh = 25
-
-maxDelta = 100 # Distancia max entre 2 picos interior y exterior
+peakHeight = .20
+prominence = .2
+peakWitdh = 50
 
 def findPeaks(serie):
 
     # remove noise applying savgol filter
     def suavizar(serie):
-
         from scipy.signal import savgol_filter
         suave = savgol_filter(serie, window_length=witdh, polyorder=order)
         return suave
     
-    suave = suavizar(serie)
-    
-    # devuelve una lista con las x donde hay picos
+    suave =  suavizar(serie)
+    #print(serie)
     peaks, _ = find_peaks(suave, height=peakHeight, prominence=prominence, distance=peakWitdh)
-    
-    # Devolver la curva suavizada y la lista de picos
-    return(suave.tolist(), peaks.tolist())
+    #print(peaks)
+    #print(len(peaks)) # number of found peaks
+    return(suave, peaks)
 
-'''un array de 0's tan largo como la serie original  con un 1  en cada pico'''
-def drawPeaks(peaks, bufferSize, val=1):
-
+def drawPeaks(peaks, bufferSize):
         foundBees=[0]*bufferSize
-        for p in peaks: foundBees[p]=val
+        for p in peaks: foundBees[p]=1
         return foundBees
-
-''' Pasarle los buffers de ambos sensores'''
-def countBees(interior, exterior):
-
-    intSuave, inP = findPeaks(interior)
-    extSuave, exP = findPeaks(exterior)
-
-    detectados = []
-    for pico in inP:
-            for x in exP:
-                delta = pico-x
-                #print(pico,",",x,":",delta)
-                if abs(delta) < maxDelta and abs(delta)>=0 :
-                    detectados.append(int((x+pico)/2))
-                    break
-    return detectados, inP, exP, intSuave, extSuave
-
-#contador con UN electrodo
-def countBeesMono(sensorData):
-
-    suave, peaks = findPeaks(sensorData)
-    print(peaks)
-    return  peaks, suave
-   
