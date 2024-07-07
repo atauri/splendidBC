@@ -2,6 +2,9 @@
 # personal data, data before publish...
 NoGit/
 
+## imagenes de rasperry
+*.img 
+
 ## Python stuff===============================================================
 # Byte-compiled / optimized / DLL files
 __pycache__/

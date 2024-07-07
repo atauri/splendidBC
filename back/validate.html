@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Add this to <head> -->
+
+<!-- Load polyfills to support older browsers -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es2015%2CIntersectionObserver" crossorigin="anonymous"></script>
+
+<!-- Load Vue followed by BootstrapVue -->
+<script src="https://unpkg.com/vue@latest/dist/vue.min.js"></script>
+
+<script src="https://unpkg.com/vue@2.6.10/dist/vue.js"></script>
+<script src="https://unpkg.com/vue-select@latest"></script>
+
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/highcharts-vue@1.3.5/dist/highcharts-vue.min.js"></script>
+
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+<style>
+    body{
+        padding:5em;   
+    }
+    video{
+        margin: 20px;
+    }
+
+    #titulo{
+        padding-top: 2em !important;
+        padding-bottom: 1em;
+        color: #333;
+        font-weight: bolder;
+        font-size: 25px;
+        font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif}  
+    .col{
+        background-color: #eee;
+        padding: 2px;
+    }
+    .col:hover{
+        background-color: orange;
+    }
+    #escapes span {
+        background-color: #ccc;
+        color: white;
+        padding: 6px;
+        margin: 3px;
+        border-radius: 5px;
+    }
+    .label{
+        width:3em !important; */
+        text-align: center;
+        background-color: #ddd;
+        margin: 4px;
+        display:inline-block;
+        padding: 6px;
+        border-radius: 5px;
+    }
+    .selectedLabel{
+        width:3em !important; */
+        text-align: center;
+        background-color: #000;
+        color:white;
+        margin: 4px;
+        display:inline-block;
+        padding: 6px;
+        border-radius: 5px;
+    }
+    .active{
+        background-color: rgb(5, 165, 93) !important;
+        color: white;
+       
+
+    }
+    
+    button {
+    margin-top: 25px;
+    background-color:rgb(168, 167, 167);
+    color: #fff;
+    border:none;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 100;
+    border-radius:5px;
+    padding: 10px;
+}
+
+.nota{
+    margin: 20px;
+    font-size: 12px;
+    color:#999;
+}
+
+.zda{
+    text-align: left;
+}
+.dcha{
+    text-align: left;
+    padding-left: 20px;
+    padding-bottom: 20px;
+}
+input{
+    width:170px;
+    color: gray;
+    border:none;
+    box-shadow: none;
+}
+small{
+    font-size: 12px;
+    color: #999;
+}
+.play, .boton{
+    background-color: #eee;
+    padding: 10px;
+    margin-top: 10px;
+}
+.boton{
+    display: inline-block;
+    margin-right:3px;
+    width: 45%;
+    
+}
+.contadas{
+    background-color: #eee;
+    color: #999;
+}
+.corta{
+    height: 800px;
+    overflow: scroll;
+    font-size: 12px;
+}
+.index{
+    background-color: #ddd;
+    color: #333;
+    padding: .5em;
+    margin: .4em;
+    border-radius: 4px;
+    min-width: 3em;
+    text-align: center;
+    display: inline-block;
+}
+</style>
+
+</head>
+
+<body>
+  <div id="app2" >
+    
+    <div class="container ">
+        
+        <div class="row">
+            <center><b id="titulo">Splendid Bee Counter </b>
+                <br><small>Counting Algorithm Validation</small>
+                <p></p><p></p>
+            </center>
+            <hr>
+            <!-- ********************************************************************* -->    
+            <div class="col-2 izda ">
+                <p></p>
+                <small>Samples</small><br>
+
+                <small> {{captura}}</small>
+               
+                <div class="corta">
+                    <span v-for="captura, index in capturas" >
+                        <span 
+                            :class="getClassLabel(index)"
+                            @click="getCaptura(captura, index)" >
+                            
+                                 <b>{{index}}</b> 
+                          
+
+                        </span>
+                    </span>
+                </div>
+                <br>
+                
+            </div>
+
+          <!--video y chart =============================================================-->  
+          <div class="col-9">
+           
+            <video width="100%" v-if="videoPath" controls
+                 ref="video">
+                <source :src="videoPath" type="video/mp4"> Your browser does not support the video tag.
+            </video> 
+
+            <p></p>
+
+
+            <div>
+              
+                <div id="escapes">
+                   <small><center>
+                    <div><b>Show Escapes</b></div><p></p>
+                    <span v-for="see, index in seeTunel"
+                    @click="change(index)"
+                    :class="[{active: see}]">{{index}}</span>
+                   </center></small>
+                </div>
+            
+            </div>
+
+            <div v-for="escape, index in escapes">
+       
+                <div v-if="seeTunel[index]">
+                  
+                    <p @click="updateBees(index)"> {{index}} <b>BEES</b>: {{escape.bees}}</p>
+                    <p v-if="escape.peaks">Found peaks: {{escape.peaks.peaks}}</p>
+                    <highcharts :options="getChart(escape)" ></highcharts> 
+                 <!-- <small>{{escape}}</small>-->
+                </div>
+              </div>
+          
+ 
+          </div>
+         
+        </div>
+      </div>
+      <small>   <p>{{ms}}</p></small>
+ </div>
+
+    <script>
+        Vue.use(HighchartsVue.default)
+        Vue.component('v-select', VueSelect.VueSelect);
+
+
+var app = new Vue({
+    el: "#app2",
+    mounted: function(){
+        var u = this.setup.apiUrl+"samples"
+        //alert(u)
+        const vm = this
+        this.getCapturas(u)
+    },
+    data() {
+        return {
+            setup:{
+                "apiUrl": "http://titi.etsii.urjc.es:8008/",  
+                "samplesUrl": "http://titi.etsii.urjc.es/splendid/samples/"
+            },
+            escapes:[],
+            seeTunel:[true, false, false, false],
+            ms:"",
+            sincro:[],
+            totalEstimadas:0,
+            totalContadas:0,
+            probabilidadMedia:0,
+            pos:0,
+            primero:0,
+            base: 0.2,
+            captura:"",
+            selectedIndex: null,
+            capturas: [],
+            videoPath: false,
+            videoDuration :0,
+            video: null
+        }
+    },
+    
+    methods:{
+        //send bees to server
+        getClassLabel(i){
+           
+            if(i==this.selectedIndex) return "selectedLabel"
+            return "label"
+        },
+        updateBees(index){
+            let bees = prompt("how many bees seen on escaepe "+index+"?")
+            this.escapes[index].bees= bees
+            // update on server
+            let u = this.setup.apiUrl+"update/"+this.captura+"/"+index+"/"+bees
+            //alert(u)
+            axios.get(u)
+                .then(function(){
+                    alert("ok")
+                })
+
+        },
+        //change tunnels seen
+        change(x){
+            this.ms=x
+            this.seeTunel[parseInt(x)] = !this.seeTunel[parseInt(x)]
+
+        },
+        getChart(escape){
+            return{  
+                            chart:{
+                                zoomType:"x",
+                                //type: "area",
+                                height:"250",
+                                tooltip: {
+                                    enabled: false
+                                },
+                                 animation: false,
+                            },
+                            title: {
+                                text: ''
+                            },
+                            yAxis: {
+                                max: 1,
+                                min:0
+                            },
+                           
+                            series: [
+                            {
+                                data: escape.peaks.serie,     
+                                color: "#FF0000",
+                                lineWidth:1,
+                                name: 'sensors',
+                                    marker: {
+                                        enabled: false
+                                    },
+                                    threshold: null
+                            },
+                            {
+                                data: escape.peaks.smoothed,     
+                                color: "#000000",
+                                lineWidth:1,
+                                name: 'Mixed',
+                                    marker: {
+                                        enabled: false
+                                    },
+                                    threshold: null
+                            },
+                            {
+                                data: escape.interior,     
+                                color: "#5555ff",
+                                lineWidth:1,
+                                name: 'interior',
+                                    marker: {
+                                        enabled: false
+                                    },
+                                    threshold: null
+                            },
+                            {
+                                data: escape.exterior,     
+                                color: "#ff5555",
+                                lineWidth:1,
+                                name: 'exterior',
+                                    marker: {
+                                        enabled: false
+                                    },
+                                    threshold: null
+                            },
+                            ],
+                           
+                    }
+        },
+        //list available files in server (titi)
+        getCapturas(u, i){
+            
+            const vm = this
+            axios.get(u)
+                .then(function(lista){
+                    vm.capturas = lista.data
+                })
+        },
+       
+        getBuffer(c){
+            
+            var url = this.setup.samplesUrl+c+".json"
+            //alert(url)
+            const vm = this
+            axios.get(url)
+                .then(function(series){
+
+                    vm.escapes = series.data
+                    console.log(series.data)
+                    /*vm.chartOptions.series[0].data = serie.data.interior
+                    vm.chartOptions.series[1].data = serie.data.exterior
+                    */
+                })
+        },
+
+        currpos(){
+            this.pos =this.$refs.video.currentTime 
+        },
+     
+        getCaptura(c, index){
+            this.selectedIndex=index
+            this.videoPath= false // rest del video
+            this.captura = c
+            this.getBuffer(c)
+            //this.getSinc(c)
+            
+            const vm = this
+            setTimeout(function(){
+                vm.videoPath = vm.setup.samplesUrl+c+".mp4"
+            },100)
+        }
+        
+    },
+    computed: {
+        
+    }
+
+})
+    </script>
+
+
+</body>
+
+</html>
