@@ -9,24 +9,16 @@ import board
 import busio
 from adafruit_cap1188.i2c import CAP1188_I2C
 
-current = 0
+current = 2
 
 # Create a UDP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-host, port = '192.168.1.201', 65000
+# IP DEL SERVIDOR DEL SOCKE (ej Mac mini, o pc)
+host, port = '192.168.1.239', 65000 # macmini - splendid
 server_address = (host, port)
 
-# Send a few messages
-'''for i in range(1000):
 
-    x = random.random()
-    message = pack('f', x)
-    sock.sendto(message, server_address)
-
-    sleep(.01)
-    x += 1
-'''
 
 # Recibe el socket
 def read(sc):
@@ -37,7 +29,7 @@ def read(sc):
     cap = CAP1188_I2C(i2c)
 
     cap.averaging = 4 #averages = (1, 2, 4, 8, 16, 32, 64, 128)
-    cap.sample="1.28ms" #("320us", "640us", "1.28ms", "2.56ms")
+    cap.sample="640us" #("320us", "640us", "1.28ms", "2.56ms")
     cap.cycle="35ms" # "35ms", "70ms", "105ms", "140ms"
      
     print(f"Sensor Initial Configuration Values: {cap.averaging, cap.sample, cap.cycle}")
@@ -45,9 +37,7 @@ def read(sc):
     # 4 buffers, oner per escape
     escapes = [0]* 4 #nu,ero de escapes (4 u 8)
            
-    #start_time = time.time()
 
-    # read 4 excapes {size} times...
     #buzz.beep(1)
 
     while True:
@@ -61,6 +51,7 @@ def read(sc):
         
 
         # Enviar por socket UN escape
+        #print(type(escapes[current]))
         msg = pack('f', escapes[current]) 
         sc.sendto(msg, server_address)
 

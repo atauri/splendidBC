@@ -11,6 +11,7 @@ from struct import unpack
 
 # Create figure for plotting
 fig = plt.figure()
+
 ax = fig.add_subplot(1, 1, 1)
 xs = [0]*2000
 ys = [0]*2000
@@ -86,18 +87,19 @@ def animate(i):
     global xs
 
     # Limit x and y lists to 20 items
-    xs=xs[-200:]
-    ys=ys[-200:]
+    xs=xs[-2000:]
+    ys=ys[-2000:]
     ax.clear()
     
-    ax.plot(ys)
+    ax.plot(ys, linewidth=1)
+    
 
     # Format plot
     #plt.xticks(rotation=45, ha='right')
     plt.subplots_adjust(bottom=0.30)
     plt.title('RT')
     plt.ylabel('Temperature (deg C)')
-
+    plt.ylim(0,1)
 
 
 
