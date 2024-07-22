@@ -20,41 +20,11 @@ i=0
 # Aquí leer por el socket del contador --------------
 def soc():
 
-    ''' PARA EL CLIENTE
-    #!/usr/bin/env python3
-
-    import socket
-    import sys
-    from time import sleep
-    import random
-    from struct import pack
-
-    # Create a UDP socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-    host, port = '192.168.0.8', 65000
-    server_address = (host, port)
-
-    # Generate some random start values
-    x, y, z = random.random(), random.random(), random.random()
-
-    # Send a few messages
-    for i in range(10):
-
-        # Pack three 32-bit floats into message and send
-        message = pack('3f', x, y, z)
-        sock.sendto(message, server_address)
-
-        sleep(1)
-        x += 1
-        y += 1
-        z += 1
-    '''
 
     print("\nCrear Socket")
-    global xs
+
     global ys
-    global i
+
 
     # crear el socket (servidor)
     # Tengo que saber mi IP (y ponérsela fija en e el router)
@@ -70,38 +40,35 @@ def soc():
     # Recibo las muestras
     while True:
         # Wait for message
-        message, address = sock.recvfrom(4096)
+        message, _ = sock.recvfrom(4096)
 
         #print(f'Received {len(message)} bytes:')
-        x  = unpack('f', message)
-        #print(f'X: {x}')
-
-        # añadir la lectura al grafico ....
-        temp_c = x #random.randint(3, 9)/10
-        ys.append(temp_c)
+        try: 
+            x  = unpack('f', message)
+            #print(f'X: {x}')
+            ys.append(x)
+        except:pass
         #time.sleep(.01)
 
 def animate(i):
 
     global ys
-    global xs
 
-    # Limit x and y lists to 20 items
-    xs=xs[-2000:]
-    ys=ys[-2000:]
-    ax.clear()
+    try: 
+        ys=ys[-2000:]
+        ax.clear()
+        ax.plot(ys, linewidth=1)
+
+        # Format plot
+        #plt.xticks(rotation=45, ha='right')
+        plt.subplots_adjust(bottom=0.30)
+        plt.title('RT')
+        plt.ylim(0,1)
+
+
+    except: print("error")
+
     
-    ax.plot(ys, linewidth=1)
-    
-
-    # Format plot
-    #plt.xticks(rotation=45, ha='right')
-    plt.subplots_adjust(bottom=0.30)
-    plt.title('RT')
-    plt.ylabel('Temperature (deg C)')
-    plt.ylim(0,1)
-
-
 
 # Set up plot to call animate() function periodically
 ani = animation.FuncAnimation(fig, animate, interval=100)
