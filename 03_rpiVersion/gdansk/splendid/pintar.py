@@ -10,7 +10,11 @@ import socket
 import sys
 from struct import unpack
 
-from webcam import Webcam
+import keyboard
+keyboard.add_hotkey('space', lambda: ipo())
+
+currentEscape = 5
+#from webcam import Webcam
 
 # Create figure for plotting
 fig = plt.figure()
@@ -19,6 +23,12 @@ ax = fig.add_subplot(1, 1, 1)
 ys = [0]*2000
 
 # Aquí leer por el socket del contador --------------
+def ipo():
+    global currentEscape
+
+    currentEscape+=1
+    if currentEscape == 8: currentEscape = 0
+
 def soc():
 
     print("\nCrear Socket")
@@ -44,14 +54,15 @@ def soc():
 
         #print(f'Received {len(message)} bytes:')
         try: 
-            x  = unpack('f', message)
-            #print(f'X: {x}')
+            x  = unpack('8f', message)
+            
             lock.acquire()
-            ys.append(x)
+            ys.append(x[currentEscape])
             ys.pop(0)
             lock.release()
         except Exception as e : print(e)
         #time.sleep(.01)
+    
 
 def animate(i):
 
@@ -71,10 +82,10 @@ def animate(i):
     lock.release()
     
     plt.subplots_adjust(bottom=0.30)
-    plt.title('Splendid escape')
+    plt.title('Splendid escape '+str(currentEscape))
     plt.ylim(0,1)
     
-def getVideo():
+'''def getVideo():
     
     import cv2
     capture = cv2.VideoCapture(1)
@@ -86,17 +97,20 @@ def getVideo():
             break
     
     capture.release()
-    cv2.destroyAllWindows()
+    cv2.destroyAllWindows()'''
 
 
-# Set up plot to call animate() function periodically
 lock = threading.Lock()
 
 ani = animation.FuncAnimation(fig, animate, interval=250)
 data = threading.Thread(target=soc).start()
-video = threading.Thread(target=getVideo).start()
+#video = threading.Thread(target=getVideo).start()
 
 
+#currentEscape = int(input("Escape?"))
+#
 plt.show()
+
+print("??")
 
 
