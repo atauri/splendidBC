@@ -19,8 +19,8 @@ currentEscape = 5
 # Create figure for plotting
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
-
-ys = [0]*2000
+ 
+ys = [0]*2000 
 
 # Aquí leer por el socket del contador --------------
 def ipo():
@@ -73,11 +73,11 @@ def animate(i):
     lock.acquire()
     y = ys.copy()
     try:  
-        suave = savgol_filter(y, window_length=50, polyorder=2) 
+        suave = savgol_filter(y, window_length=50, polyorder=1) 
 
     except Exception as e: print("SUAVIZAR:",e)
     try:        
-        ax.plot(y, color="black", linewidth=.75)
+        ax.plot(suave, color="black", linewidth=.75)
     except Exception as e: print("PINTAR:", e)
     lock.release()
     
