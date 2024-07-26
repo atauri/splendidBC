@@ -18,9 +18,11 @@ currentEscape = 5
 
 # Create figure for plotting
 fig = plt.figure()
+fig.set_figwidth(200)
 ax = fig.add_subplot(1, 1, 1)
- 
-ys = [0]*2000 
+
+tam=10000
+ys = [0]*tam 
 
 # Aquí leer por el socket del contador --------------
 def ipo():
@@ -81,7 +83,7 @@ def animate(i):
     except Exception as e: print("PINTAR:", e)
     lock.release()
     
-    plt.subplots_adjust(bottom=0.30)
+    plt.subplots_adjust(bottom=0.10, left=0.10)
     plt.title('Splendid escape '+str(currentEscape))
     plt.ylim(0,1)
     
