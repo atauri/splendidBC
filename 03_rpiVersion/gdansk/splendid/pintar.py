@@ -10,26 +10,53 @@ import socket
 import sys
 from struct import unpack
 
-import keyboard
-keyboard.add_hotkey('space', lambda: ipo())
-
-currentEscape = 5
 #from webcam import Webcam
+import keyboard
 
-# Create figure for plotting
-fig = plt.figure()
-fig.set_figwidth(200)
-ax = fig.add_subplot(1, 1, 1)
+# teclado
 
-tam=10000
-ys = [0]*tam 
+# Cambiar el escape
+keyboard.add_hotkey('1', lambda: ipo(0))
+keyboard.add_hotkey('2', lambda: ipo(1))
+keyboard.add_hotkey('3', lambda: ipo(2))
+keyboard.add_hotkey('4', lambda: ipo(3))
+keyboard.add_hotkey('5', lambda: ipo(4))
+keyboard.add_hotkey('6', lambda: ipo(5))
+keyboard.add_hotkey('7', lambda: ipo(6))
+keyboard.add_hotkey('8', lambda: ipo(7))
+
+# Resetear la gráfica
+keyboard.add_hotkey('enter', lambda: reset())
+
+# parar y contar
+parar = threading.Event()
+keyboard.add_hotkey('c', lambda: grabarVideo(parar))
+
+# Grabar un video
+def grabarVideo(detener):
+
+    video = threading.Thread(target=getVideo, args=(detener,)).start()
+   
+
+    
+def detenerVideo(ev):
+    time.sleep(10)
+    ev.set()
 
 # Aquí leer por el socket del contador --------------
-def ipo():
-    global currentEscape
+def reset():
 
-    currentEscape+=1
-    if currentEscape == 8: currentEscape = 0
+    global ys
+    global i
+
+    ys = [0]*tam 
+    i=0
+
+def ipo( escp):
+
+    global currentEscape
+    currentEscape= escp
+  
 
 def soc():
 
@@ -37,6 +64,7 @@ def soc():
 
     global ys
     global lock
+    global i
 
     # crear el socket (servidor)
     # Tengo que saber mi IP (y ponérsela fija en e el router)
@@ -62,6 +90,7 @@ def soc():
             ys.append(x[currentEscape])
             ys.pop(0)
             lock.release()
+       
         except Exception as e : print(e)
         #time.sleep(.01)
     
@@ -75,7 +104,7 @@ def animate(i):
     lock.acquire()
     y = ys.copy()
     try:  
-        suave = savgol_filter(y, window_length=50, polyorder=1) 
+        suave = savgol_filter(y, window_length=20, polyorder=2) 
 
     except Exception as e: print("SUAVIZAR:",e)
     try:        
@@ -87,19 +116,68 @@ def animate(i):
     plt.title('Splendid escape '+str(currentEscape))
     plt.ylim(0,1)
     
-'''def getVideo():
-    
+def getVideo(para):
+
+    print(" grabar video -->")
+
     import cv2
-    capture = cv2.VideoCapture(1)
- 
-    while (capture.isOpened()):
-        ret, frame = capture.read()
-        cv2.imshow('webCam',frame)
-        if (cv2.waitKey(1) == ord('s')):
-            break
+
+    vid = cv2.VideoCapture(1) 
+    frame_width = int(vid.get(3)) 
+    frame_height = int(vid.get(4)) 
     
-    capture.release()
-    cv2.destroyAllWindows()'''
+    size = (frame_width, frame_height) 
+
+    
+    fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+    result = cv2.VideoWriter('./videos/filename.mp4',  
+            fourcc, 
+            25, size) 
+
+    reset()
+    threading.Thread(target=detenerVideo, args=(para,)).start()
+    while(True): 
+      
+        # Capture the video frame 
+        # by frame 
+        ret, frame = vid.read() 
+        result.write(frame) 
+        # Display the resulting frame 
+        cv2.imshow('frame', frame) 
+        
+        # the 'q' button is set as the 
+        # quitting button you may use any 
+        # desired button of your choice 
+        if cv2.waitKey(1) & 0xFF == ord('q'): 
+            break
+        if para.is_set(): 
+            print("stop")
+            break
+  
+ 
+    vid.release() 
+    result.release()
+    cv2.destroyAllWindows() 
+
+    
+        
+    
+    print("fin")
+    
+
+# ---------------------------------------------------
+
+
+
+currentEscape = 5
+
+# Create figure for plotting
+fig = plt.figure()
+fig.set_figwidth(200)
+ax = fig.add_subplot(1, 1, 1)
+
+tam=2000
+ys = [0]*tam 
 
 
 lock = threading.Lock()
@@ -108,11 +186,8 @@ ani = animation.FuncAnimation(fig, animate, interval=250)
 data = threading.Thread(target=soc).start()
 #video = threading.Thread(target=getVideo).start()
 
-
-#currentEscape = int(input("Escape?"))
-#
 plt.show()
 
-print("??")
+
 
 
