@@ -4,14 +4,14 @@ import matplotlib.animation as animation
 import random
 import time
 import threading
-from scipy.signal import savgol_filter
-        
+from scipy.signal import savgol_filter       
 import socket
 import sys
 from struct import unpack
 
 #from webcam import Webcam
 import keyboard
+import cv2
 
 # teclado
 
@@ -30,41 +30,47 @@ keyboard.add_hotkey('enter', lambda: reset())
 
 # parar y contar
 parar = threading.Event()
-keyboard.add_hotkey('c', lambda: grabarVideo(parar))
+grabando = threading.Event()
+
+keyboard.add_hotkey('c', lambda: grabarVideo(parar, grabando))
 
 # Grabar un video
-def grabarVideo(detener):
+def grabarVideo(detener, grabar):
 
-    video = threading.Thread(target=getVideo, args=(detener,)).start()
+    video = threading.Thread(target=getVideo, args=(detener, grabar)).start()
    
-
     
 def detenerVideo(ev):
     time.sleep(10)
     ev.set()
 
+
+
 # Aquí leer por el socket del contador --------------
 def reset():
 
     global ys
-    global i
+    global total
 
     ys = [0]*tam 
-    i=0
+    total = []
 
+
+# selecciona el escape
 def ipo( escp):
 
     global currentEscape
     currentEscape= escp
-  
 
-def soc():
+
+
+def soc( grabando ):
 
     print("\nCrear Socket")
 
     global ys
     global lock
-    global i
+    global total
 
     # crear el socket (servidor)
     # Tengo que saber mi IP (y ponérsela fija en e el router)
@@ -90,7 +96,8 @@ def soc():
             ys.append(x[currentEscape])
             ys.pop(0)
             lock.release()
-       
+            if grabando.is_set():  total.append(x[currentEscape])  
+
         except Exception as e : print(e)
         #time.sleep(.01)
     
@@ -116,11 +123,11 @@ def animate(i):
     plt.title('Splendid escape '+str(currentEscape))
     plt.ylim(0,1)
     
-def getVideo(para):
+def getVideo(para, graba):
 
     print(" grabar video -->")
 
-    import cv2
+    
 
     vid = cv2.VideoCapture(1) 
     frame_width = int(vid.get(3)) 
@@ -135,7 +142,9 @@ def getVideo(para):
             25, size) 
 
     reset()
-    threading.Thread(target=detenerVideo, args=(para,)).start()
+    graba.set()
+
+    #threading.Thread(target=detenerVideo, args=(para,)).start()
     while(True): 
       
         # Capture the video frame 
@@ -149,17 +158,20 @@ def getVideo(para):
         # quitting button you may use any 
         # desired button of your choice 
         if cv2.waitKey(1) & 0xFF == ord('q'): 
+            para.clear()
+            grabando.clear()
             break
         if para.is_set(): 
             print("stop")
+            para.clear()
+            grabando.clear()
             break
   
- 
+    # liberar la camara
     vid.release() 
     result.release()
     cv2.destroyAllWindows() 
-
-    
+    print("Datos grabados:", len(total))
         
     
     print("fin")
@@ -183,7 +195,7 @@ ys = [0]*tam
 lock = threading.Lock()
 
 ani = animation.FuncAnimation(fig, animate, interval=250)
-data = threading.Thread(target=soc).start()
+data = threading.Thread(target=soc, args=(grabando,)).start()
 #video = threading.Thread(target=getVideo).start()
 
 plt.show()
