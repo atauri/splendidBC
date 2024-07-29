@@ -1,4 +1,4 @@
-import datetime as dt
+from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import random
@@ -12,6 +12,7 @@ from struct import unpack
 #from webcam import Webcam
 import keyboard
 import cv2
+import json
 
 # teclado
 
@@ -41,9 +42,9 @@ def grabarVideo(detener, grabar):
    
     
 def detenerVideo(ev):
-    time.sleep(10)
+    print("terminar dentro de 30 sg")
+    time.sleep(30)
     ev.set()
-
 
 
 # Aquí leer por el socket del contador --------------
@@ -99,7 +100,6 @@ def soc( grabando ):
             if grabando.is_set():  total.append(x[currentEscape])  
 
         except Exception as e : print(e)
-        #time.sleep(.01)
     
 
 def animate(i):
@@ -123,32 +123,31 @@ def animate(i):
     plt.title('Splendid escape '+str(currentEscape))
     plt.ylim(0,1)
     
+
 def getVideo(para, graba):
 
-    print(" grabar video -->")
-
-    
+    nombreFichero = datetime.today().strftime('%Y-%m-%d_%H.%M')
+    print(" grabar video :", nombreFichero)
 
     vid = cv2.VideoCapture(1) 
     frame_width = int(vid.get(3)) 
     frame_height = int(vid.get(4)) 
-    
     size = (frame_width, frame_height) 
 
-    
     fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-    result = cv2.VideoWriter('./videos/filename.mp4',  
+    result = cv2.VideoWriter(f'./videos/{nombreFichero}.mp4',  
             fourcc, 
             25, size) 
 
     reset()
+    # indica al sensor que comience a guardar los datos en el array total
     graba.set()
 
-    #threading.Thread(target=detenerVideo, args=(para,)).start()
+    # Para a los x segundos si no se sale con 'q'
+    threading.Thread(target=detenerVideo, args=(para,)).start()
     while(True): 
       
         # Capture the video frame 
-        # by frame 
         ret, frame = vid.read() 
         result.write(frame) 
         # Display the resulting frame 
@@ -157,22 +156,24 @@ def getVideo(para, graba):
         # the 'q' button is set as the 
         # quitting button you may use any 
         # desired button of your choice 
-        if cv2.waitKey(1) & 0xFF == ord('q'): 
-            para.clear()
-            grabando.clear()
-            break
+        if cv2.waitKey(1) & 0xFF == ord('q'): break
         if para.is_set(): 
-            print("stop")
-            para.clear()
-            grabando.clear()
+            print("Parada programada")
             break
-  
+            
+    # notificar a otros hilos        
+    para.clear()
+    grabando.clear()        
+
     # liberar la camara
     vid.release() 
     result.release()
-    cv2.destroyAllWindows() 
+
+    # grabar los datos del sensor
     print("Datos grabados:", len(total))
-        
+    with open(f'./videos/{nombreFichero}.json', 'w') as f:
+        json.dump({'bees':False,'sensor':total}, f)
+    cv2.destroyAllWindows()     
     
     print("fin")
     
