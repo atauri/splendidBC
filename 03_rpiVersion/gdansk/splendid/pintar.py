@@ -134,7 +134,7 @@ def getVideo(para, graba):
     frame_height = int(vid.get(4)) 
     size = (frame_width, frame_height) 
 
-    fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+    fourcc = cv2.VideoWriter_fourcc(*'H264')
     result = cv2.VideoWriter(f'./videos/{nombreFichero}.mp4',  
             fourcc, 
             25, size) 
