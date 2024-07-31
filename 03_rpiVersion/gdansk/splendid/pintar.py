@@ -13,7 +13,9 @@ from struct import unpack
 import keyboard
 import cv2
 import json
+import peaksLib
 
+from beep import beep
 # teclado
 
 # Cambiar el escape
@@ -35,6 +37,16 @@ grabando = threading.Event()
 
 keyboard.add_hotkey('c', lambda: grabarVideo(parar, grabando))
 
+
+def beeps(n=1):
+
+    for _ in range(n):
+        frequency = 840
+        duration = 100
+        beep(frequency, duration) # duration in ms, frequency in Hz
+        time.sleep(.2)
+        
+
 # Grabar un video
 def grabarVideo(detener, grabar):
 
@@ -52,10 +64,13 @@ def reset():
 
     global ys
     global total
+    global totalBees
+    global lastFound
 
     ys = [0]*tam 
     total = []
-
+    totalBees = 0
+    lastFound = 0
 
 # selecciona el escape
 def ipo( escp):
@@ -64,14 +79,14 @@ def ipo( escp):
     currentEscape= escp
 
 
-
 def soc( grabando ):
 
     print("\nCrear Socket")
 
     global ys
     global lock
-    global total
+    global total # Array con todas las muestras
+    global totaBees
 
     # crear el socket (servidor)
     # Tengo que saber mi IP (y ponérsela fija en e el router)
@@ -106,21 +121,38 @@ def animate(i):
 
     global ys
     global lock
-
+    global totalBees
+    global lastFound  # picos entcontrados en la ventana anterior
+    
+    
     ax.clear()
     lock.acquire()
     y = ys.copy()
+    
+    # buscar las abejas (find peaks)
     try:  
-        suave = savgol_filter(y, window_length=20, polyorder=2) 
+        suave, peaks = peaksLib.findPeaks(y)
+        bees = peaksLib.drawPeaks(peaks, len(y)) # bees es el array
 
-    except Exception as e: print("SUAVIZAR:",e)
-    try:        
+        nBees = len(peaks) # number of bees on last wondow (2000 valores)
+
+        # acumula los pico encontrados
+        inc = nBees-lastFound
+        #print(inc)
+        if inc>0 : 
+            totalBees+= inc
+            beeps(inc)
+        lastFound = nBees
+
         ax.plot(suave, color="black", linewidth=.75)
-    except Exception as e: print("PINTAR:", e)
+        ax.plot(y, color="gray", linewidth=.5)
+        ax.plot(bees, color="red", linewidth=.5)
+    except Exception as e: print("SUAVIZAR:",e)
+    
     lock.release()
     
     plt.subplots_adjust(bottom=0.10, left=0.10)
-    plt.title('Splendid escape '+str(currentEscape))
+    plt.title('Splendid escape '+str(currentEscape+1)+" bees:"+str(totalBees))
     plt.ylim(0,1)
     
 
@@ -180,24 +212,24 @@ def getVideo(para, graba):
 
 # ---------------------------------------------------
 
+beeps(3)
 
-
-currentEscape = 5
+currentEscape = 4
+totalBees = 0
+lastFound = 0 
 
 # Create figure for plotting
+
 fig = plt.figure()
-fig.set_figwidth(200)
 ax = fig.add_subplot(1, 1, 1)
 
 tam=2000
 ys = [0]*tam 
 
-
 lock = threading.Lock()
 
 ani = animation.FuncAnimation(fig, animate, interval=250)
 data = threading.Thread(target=soc, args=(grabando,)).start()
-#video = threading.Thread(target=getVideo).start()
 
 plt.show()
 

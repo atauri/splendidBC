@@ -3,7 +3,7 @@ import numpy as np
 
 # Setup ----
 # smooth curve
-witdh = 30
+witdh = 100
 order = 2
 
 # peak detection
