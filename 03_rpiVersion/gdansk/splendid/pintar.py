@@ -40,6 +40,7 @@ keyboard.add_hotkey('c', lambda: grabarVideo(parar, grabando))
 
 def beeps(n=1):
 
+
     for _ in range(n):
         frequency = 840
         duration = 100
@@ -203,8 +204,12 @@ def getVideo(para, graba):
 
     # grabar los datos del sensor
     print("Datos grabados:", len(total))
+    _, picos = peaksLib.find_peaks(total)
     with open(f'./videos/{nombreFichero}.json', 'w') as f:
-        json.dump({'bees':False,'sensor':total}, f)
+        json.dump({
+            'foundBees': picos,
+            'sensor':total
+            }, f)
     cv2.destroyAllWindows()     
     
     print("fin")

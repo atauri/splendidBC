@@ -7,25 +7,21 @@ import random
 from struct import pack
 import board
 import busio
-from adafruit_cap1188.i2c import CAP1188_I2C
-
-current =2 
+from adafruit_cap1188.i2c import CAP1188_I2C 
 
 
 # Create a UDP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # IP DEL SERVIDOR DEL SOCKE (ej Mac mini, o pc)
-host, port = '192.168.1.239', 65000 # macmini - splendid
-#host, port = '192.168.1.216', 65000 # windows
+#host, port = '192.168.1.239', 65000 # macmini - splendid
+host, port = '192.168.1.216', 65000 # windows
 server_address = (host, port)
-
 
 
 # Recibe el socket
 def read(sc):
     
-
     # connect
     i2c = busio.I2C(board.SCL, board.SDA)
     cap = CAP1188_I2C(i2c)
@@ -37,24 +33,21 @@ def read(sc):
     print(f"Sensor Initial Configuration Values: {cap.averaging, cap.sample, cap.cycle}")
    
     # 4 buffers, oner per escape
-    escapes = [0]* 4 #nu,ero de escapes (4 u 8)
+    escapes = [0]* 8 #numero de escapes
            
-
     #buzz.beep(1)
-    print(f"escape {current}")
     while True:
 
         # Hacer un barrido
         try:
-           for escape in range(4): #0..3
+           for escape in range(8): # Mando todos aunque solo use 4
                escapes[escape] = (127+cap.delta_count(escape+1))/255.0
                   
         except Exception as e: print(e)
-        
 
         # Enviar por socket UN escape
         #print(type(escapes[current]))
-        msg = pack('f', escapes[current]) 
+        msg = pack('8f', *escapes) # desempaqueta la lista
         sc.sendto(msg, server_address)
 
 
