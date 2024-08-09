@@ -12,8 +12,8 @@ def beep(beeps=1):
     for _ in range(beeps):
         GPIO.output(buzzer,GPIO.HIGH)
         
-        sleep(0.10) # Delay in seconds
+        sleep(0.5) # Delay in seconds
         GPIO.output(buzzer,GPIO.LOW)
  
-        sleep(.10)
+        sleep(.5)
 

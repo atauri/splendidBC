@@ -37,15 +37,14 @@ grabando = threading.Event()
 
 keyboard.add_hotkey('c', lambda: grabarVideo(parar, grabando))
 
-
 def beeps(n=1):
 
 
     for _ in range(n):
         frequency = 840
-        duration = 100
+        duration = 50
         beep(frequency, duration) # duration in ms, frequency in Hz
-        time.sleep(.2)
+        time.sleep(.1)
         
 
 # Grabar un video
@@ -56,7 +55,7 @@ def grabarVideo(detener, grabar):
     
 def detenerVideo(ev):
     print("terminar dentro de 30 sg")
-    time.sleep(30)
+    time.sleep(60)
     ev.set()
 
 
@@ -134,6 +133,7 @@ def animate(i):
     try:  
         suave, peaks = peaksLib.findPeaks(y)
         bees = peaksLib.drawPeaks(peaks, len(y)) # bees es el array
+
 
         nBees = len(peaks) # number of bees on last wondow (2000 valores)
 

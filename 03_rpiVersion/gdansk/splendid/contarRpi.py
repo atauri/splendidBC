@@ -1,37 +1,21 @@
-from datetime import datetime
+'''
+scp contarRpi.py tadu@192.168.1.133/home/tadu/splendid/contarRpi.py 
+'''
 
+from datetime import datetime
 import time
 import threading
-from scipy.signal import savgol_filter       
-import socket
-
-from struct import unpack
+import board
+import busio
+from adafruit_cap1188.i2c import CAP1188_I2C 
 
 #para contar
 # pip install paho-mqtt==1.6.1
 import paho.mqtt.client as mqtt # use version 1.6.1 (see server version)
 
-import keyboard
-import cv2
-import json
 import peaksLib
 
-from beep import beep
 
-# Teclado -----------------------------------------------------
-
-# Resetear la gráfica
-keyboard.add_hotkey('enter', lambda: reset())
-
-totalEscapes = 4
-
-count={
-    "outEscapes":[0,1,0,1],
-    "inEscapes":[1,0,1,0],
-    "inBees":0,
-    "outBees":0
-}
-'''
 def on_connect(client, userdata, flags, rc):
     print("MQTT, on_connect")
     if rc==0:
@@ -41,7 +25,7 @@ def on_connect(client, userdata, flags, rc):
 
 
 def insertMqtt(inBees, outBees, 
-               mac="00:00:00:00:00:01",
+               mac="00:00:00:00:00:00",
                timeZone="Europe/Madrid", 
                myMac="00:00:00:00:00:01"):
 
@@ -52,75 +36,49 @@ def insertMqtt(inBees, outBees,
     result = client.publish(topic, payload)
     print("Result: ", result)
     return
-'''
+
 #======================================================
 
 
-def beeps(n=1):
+# Aquí leer del cap1188 --------------
+def leer(  ):
 
-    for _ in range(n):
-        frequency = 840
-        duration = 100
-        beep(frequency, duration) # duration in ms, frequency in Hz
-        time.sleep(.2)
-        
-
-# Aquí leer por el socket del contador --------------
-def reset():
-
-    global ys
-    global total
-    global totalBees
-    global lastFound
-
-    ys = [0]*tam 
-    total = []
-    totalBees = 0
-    lastFound = 0
-
-
-def soc(  ):
-
-    print("\nCrear Socket")
+    print("\nLeer")
 
     global ys
     global lock
     global total # Array con todas las muestras
     global totaBees
 
-    # crear el socket (servidor)
-    # Tengo que saber mi IP (y ponérsela fija en e el router)
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    i2c = busio.I2C(board.SCL, board.SDA)
+    cap = CAP1188_I2C(i2c)
 
-    # Bind the socket to the port
-    host, port = '0.0.0.0', 65000
-    server_address = (host, port)
-
-    print(f'Starting UDP server on {host} port {port}, esperando cliente')
-    sock.bind(server_address)
-
+    cap.averaging = 4 #verages = (1, 2, 4, 8, 16, 32, 64, 128)
+    cap.sample="1.28ms" #("320us", "640us", "1.28ms", "2.56ms")
+    cap.cycle="35ms" # "35ms", "70ms", "105ms", "140ms"
+     
+    print(f"Sensor Initial Configuration Values: {cap.averaging, cap.sample, cap.cycle}")
+   
     # Recibo las muestras
     while True:
-        # Wait for message
-        message, _ = sock.recvfrom(4096)
+   
+        try:
+           for escape in range(8): # Mando todos aunque solo use 4
+               val = (127+cap.delta_count(escape+1))/255.0
+               lock.acquire()
+               ys[escape].append(val)
+               ys[escape].pop(0)
+               lock.release() 
 
-        #los añado por una punta y los quito por la otra
-        try: 
-            x  = unpack('8f', message)
-            lock.acquire()
-            for i in range(8): #itera en cada escape
-                ys[i].append(x[i])
-                ys[i].pop(0)
-            lock.release()
+        except Exception as e: print(e)
 
-        except Exception as e : print(e)
-    
 
 def contar():
     global current
     global ys
     global lock
-    totalBees = [0]*8
+    global totalBees
+    
     lastFound = [0]*8  # picos entcontrados en la ventana anterior
     
     def contarEscape(y, total, last=0, pitar = False):
@@ -137,7 +95,7 @@ def contar():
             #print("Incremento: ",inc)
             if inc > 0 : 
                 total+= inc
-                if pitar: beeps(inc)
+                if pitar: pass
             last = nBees
 
         except Exception as e: print("Error:",e)
@@ -159,24 +117,52 @@ def contar():
                 lastFound[escape], 
                 escape==current                
                 )
+        #print(totalBees)
+
+'''Inserta en el servidor cada 5 min y resetea'''    
+def insertar():
+
+    global totalBees #array con conteos acumulados
+    count={
+        "outEscapes": [0,1,0,1,0,0,0,0],
+        "inEscapes":  [1,0,1,0,0,0,0,0],
+        "inBees":0,
+        "outBees":0
+    }
+    print("insertar en BD")
+    while True:
+        time.sleep(60) # produccion: 300, 5 min
+
+        # entran o salen?
+        print("totalBees")
         print(totalBees)
-        
-    
+        for i in range(8):
+            if (count['outEscapes'][i]==1): count['outBees']+=totalBees[i]
+            if (count['inEscapes'][i]==1): count['inBees']+=totalBees[i]
+
+        #enviar mqtt
+        print(count)
+        insertMqtt(count['inBees'],count['outBees'])
+
+        #reset
+        count['outBees']=0
+        count['inBees']=0
+        totalBees = [0]*8
+
+
 # ---------------------------------------------------
 
-beeps(3)
-
 # mqtt stuff ============================================
-'''broker_address = "titi.etsii.urjc.es"
+broker_address = "titi.etsii.urjc.es"
 topic = "splendid/insert/counter"
 
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1,"bc1")
 client.on_connect = on_connect
 client.connect(broker_address) 
-client.loop_start() # Inicio del bucle'''
+client.loop_start() # Inicio del bucle
 
-
-
+totalBees = [0]*8
+# debug...
 current = 1 # escape que puede pitar cuando cuente
 
 # crea un buffer para cada escape (ys)
@@ -188,14 +174,14 @@ for i in range(8):
 # cerrojo pra exclusion mutua
 lock = threading.Lock()
 
-# lee de socket indefinidamente
-data = threading.Thread(target=soc,).start()
+# insertar en el servidor
+threading.Thread(target=insertar).start()
 
 # cada cierto tiempo cuenta los picos en los buffers
 threading.Thread(target=contar,).start()
 
-#plt.show()
-
+# leer valores de cada escape
+leer()
 
 
 

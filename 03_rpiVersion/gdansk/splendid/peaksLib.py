@@ -8,8 +8,8 @@ order = 2
 
 # peak detection
 peakHeight = .20
-prominence = .2
-peakWitdh = 50
+prominence = .20
+peakWitdh = 40
 
 def findPeaks(serie):
 
