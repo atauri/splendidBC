@@ -5,6 +5,7 @@ videos/
 
 ## imagenes de rasperry
 *.img 
+*.mp4
 
 ## Python stuff===============================================================
 # Byte-compiled / optimized / DLL files
