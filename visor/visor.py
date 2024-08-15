@@ -187,9 +187,6 @@ serie = abrirDatos(test)
 pos = 0
 vlength=10000 # se sobreescribe al leer el video
 
-#threading.Thread(target=graficar, args=(serie,)).start()
-
-
 fig = plt.figure()
 fig.set_size_inches(35, 4)
 

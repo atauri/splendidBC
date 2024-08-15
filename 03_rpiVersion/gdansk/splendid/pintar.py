@@ -106,7 +106,7 @@ def soc( grabando ):
 
         #print(f'Received {len(message)} bytes:')
         try: 
-            x  = unpack('8f', message)
+            x  = unpack('4f', message)
             
             lock.acquire()
             ys.append(x[currentEscape])
@@ -131,7 +131,7 @@ def animate(i):
     
     # buscar las abejas (find peaks)
     try:  
-        suave, peaks = peaksLib.findPeaks(y)
+        '''suave, peaks = peaksLib.findPeaks(y)
         bees = peaksLib.drawPeaks(peaks, len(y)) # bees es el array
 
 
@@ -143,11 +143,11 @@ def animate(i):
         if inc>0 : 
             totalBees+= inc
             beeps(inc)
-        lastFound = nBees
+        lastFound = nBees'''
 
-        ax.plot(suave, color="black", linewidth=.75)
+        #ax.plot(suave, color="black", linewidth=.75)
         ax.plot(y, color="gray", linewidth=.5)
-        ax.plot(bees, color="red", linewidth=.5)
+        #ax.plot(bees, color="red", linewidth=.5)
     except Exception as e: print("SUAVIZAR:",e)
     
     lock.release()
@@ -200,14 +200,15 @@ def getVideo(para, graba):
 
     # liberar la camara
     vid.release() 
+    
     result.release()
 
     # grabar los datos del sensor
     print("Datos grabados:", len(total))
-    _, picos = peaksLib.find_peaks(total)
+    _, picos = peaksLib.findPeaks(total)
     with open(f'./videos/{nombreFichero}.json', 'w') as f:
         json.dump({
-            'foundBees': picos,
+            'foundBees': [],
             'sensor':total
             }, f)
     cv2.destroyAllWindows()     
@@ -219,7 +220,7 @@ def getVideo(para, graba):
 
 beeps(3)
 
-currentEscape = 4
+currentEscape = 2
 totalBees = 0
 lastFound = 0 
 
